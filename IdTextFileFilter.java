@@ -17,6 +17,7 @@ package ru.vbfp.idreport;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  *
@@ -26,13 +27,17 @@ public class IdTextFileFilter {
     private ArrayList<Path> listImagesFiles;
     private ArrayList<Path> listTextFiles;
     private ArrayList<String> currentFileStrings;
+    private Path currentReportFolder;
+    private IdFileManager idinnerFmReport;
 
-    public IdTextFileFilter(ArrayList<Path> forImagesFiles, ArrayList<Path> forTextFiles) {
+    public IdTextFileFilter(ArrayList<Path> forImagesFiles, ArrayList<Path> forTextFiles, IdFileManager idOuterFmReport) {
         currentFileStrings = new ArrayList<String>();
         listImagesFiles = new ArrayList<Path>();
         listTextFiles = new ArrayList<Path>();
         listImagesFiles.addAll(forImagesFiles);
         listTextFiles.addAll(forTextFiles);
+        idinnerFmReport = idOuterFmReport;
+        currentReportFolder = idinnerFmReport.getCurrentReportDir();
     }
     protected void createReportFromFiles(){
         
@@ -47,6 +52,7 @@ public class IdTextFileFilter {
     }
     protected void detectFileContent(){
         for (String currentFileString : currentFileStrings) {
+            String uuid = UUID.randomUUID().toString();
             String[] splitContent = currentFileString.split(" ");
         }
     }

@@ -41,6 +41,18 @@ import java.util.logging.Logger;
  */
 public class IdFileManager {
     private static final String PATH_ROOT = "D:/";
+    private static final String REPORT_POSFIX = "-id-sum-rep";
+    private static final String HTML = "html";
+    private static final String XLS_REPORTS = "xlsx";
+    private static final String DIR_DICTONARIES = "dict";
+    private static final String DIR_DICTONARIES_UNFILTERED = "dict-unf";
+    private static final String FILE_ALL_UNFILTERED_WORD = "dict-unf.txt";
+    private static final String FILE_ALL_UNFILTERED_STATS = "stat.txt";
+    private static final String FIELD_SEPARATOR = "|_|_|_|_|";
+    private static final String IS_COMPILED_REPORT = "-compiled.st";
+    private static final String XLSX_REPORT_NAME = "-id-reestr.xlsx";
+    
+    private Path currentReportFolder;
     
     private static final String PDF_DIR = "pdf";
     private static final String PDF_RENAMED_DIR = "pdf-renamed";
@@ -73,6 +85,24 @@ public class IdFileManager {
         if( !storagesList.isEmpty() ){
             storageIndex = 0;
         }
+        listReportDirInRoot();
+        checkOrCreateSubWorkDir(HTML);
+        checkOrCreateSubWorkDir(XLS_REPORTS);
+        checkOrCreateSubWorkDir(DIR_DICTONARIES);
+        checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
+        
+    }
+    protected Path getDirReportHTML(){
+       return checkOrCreateSubWorkDir(HTML);
+    }
+    protected Path getDirReportDictonaries(){
+       return checkOrCreateSubWorkDir(DIR_DICTONARIES);
+    }
+    protected Path getDirReportDictonariesUnfiltered(){
+       return checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
+    }
+    protected Path getDirReportXls(){
+       return checkOrCreateSubWorkDir(XLS_REPORTS);
     }
     protected Path getCurrentStorage(){
         if( storageIndex < 0 ){
@@ -310,5 +340,83 @@ public class IdFileManager {
       
        //formatted value of current Date
        return df.format(currentDate);
+    }
+    private Path checkOrCreateSubWorkDir(String subDirName){
+         Path forCheckOrCreateDir = Paths.get(currentReportFolder.toString(),subDirName);
+        if( Files.exists(forCheckOrCreateDir, LinkOption.NOFOLLOW_LINKS) ){
+            try {
+                pathIsNotReadWriteLink(forCheckOrCreateDir);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + forCheckOrCreateDir.toString());
+            }
+            if( Files.isDirectory(forCheckOrCreateDir, LinkOption.NOFOLLOW_LINKS) ){
+                return forCheckOrCreateDir;
+            }
+        }
+        try {
+            Files.createDirectory(forCheckOrCreateDir);
+            pathIsNotReadWriteLink(forCheckOrCreateDir);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t createDirectory " + forCheckOrCreateDir.toString());
+        }
+        return forCheckOrCreateDir;
+    }
+    private Path createReportFolder(){
+        String newStoragePath = getNewProcessId();
+        Path workPath = Paths.get(PATH_ROOT,newStoragePath + REPORT_POSFIX);
+        if( !Files.exists(workPath, LinkOption.NOFOLLOW_LINKS)){
+            try {
+                Files.createDirectory(workPath);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Can`t create work directory for Storage: " + workPath.toString());
+            }
+        }
+        return workPath;
+    }
+    protected void listReportDirInRoot() {
+        Path workPath = Paths.get(PATH_ROOT);
+        System.out.println("Storage contained in PDF directory " + workPath.toString());
+        System.out.println("files: ");
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workPath,"*{" + REPORT_POSFIX + "}")) {
+        for (Path entry : stream) {
+            try {
+                pathIsNotReadWriteLink(entry);
+                pathIsNotDirectory(entry);
+                Path forCheckCompiled = Paths.get(entry.toString(),IS_COMPILED_REPORT);
+                if( !Files.exists(forCheckCompiled) ){
+                    currentReportFolder = entry;
+                }
+                
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + entry.toString());
+            }
+            
+            count++;
+            
+        }
+        if( count == 0 ){
+            System.out.println("Directory is Empty " + workPath.toString());
+            currentReportFolder = createReportFolder();
+        }
+        } catch (IOException | DirectoryIteratorException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + workPath.toString());
+        }
+    }
+    protected Path getCurrentReportDir(){
+        return currentReportFolder;
+    }
+    protected Path getXlsReportFileName(){
+        Path dirReportXls = getDirReportXls();
+        System.out.println(dirReportXls.toString());
+        Path currentXlsReportFile = Paths.get(dirReportXls.toString(), getNewProcessId() + XLSX_REPORT_NAME);
+        System.out.println(getDirReportXls().toString());
+        System.out.println(currentXlsReportFile.toString());
+        return currentXlsReportFile;
     }
 }

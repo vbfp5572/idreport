@@ -50,7 +50,9 @@ public class IdReport {
             idFmReport.setNextCurrentStorage();
             //@todo in iterations use here continue;
         }
-        IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles);
+        IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
+        IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport);
+        reporterToXls.processFileFromList();
         forImagesFiles.clear();
         forTextFiles.clear();
         
