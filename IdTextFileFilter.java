@@ -15,10 +15,40 @@
  */
 package ru.vbfp.idreport;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+
 /**
  *
  * @author VB
  */
 public class IdTextFileFilter {
+    private ArrayList<Path> listImagesFiles;
+    private ArrayList<Path> listTextFiles;
+    private ArrayList<String> currentFileStrings;
+
+    public IdTextFileFilter(ArrayList<Path> forImagesFiles, ArrayList<Path> forTextFiles) {
+        currentFileStrings = new ArrayList<String>();
+        listImagesFiles = new ArrayList<Path>();
+        listTextFiles = new ArrayList<Path>();
+        listImagesFiles.addAll(forImagesFiles);
+        listTextFiles.addAll(forTextFiles);
+    }
+    protected void createReportFromFiles(){
+        
+        for (int i = 0; i < listTextFiles.size(); i++) {
+            Path getTextFilesPath = listTextFiles.get(i);
+            Path getImagesFilesPath = listImagesFiles.get(i);
+            currentFileStrings.addAll(IdFileManager.readLinesFromFile(getTextFilesPath));
+            detectFileContent();
+            currentFileStrings.clear();
+        }
+        
+    }
+    protected void detectFileContent(){
+        for (String currentFileString : currentFileStrings) {
+            String[] splitContent = currentFileString.split(" ");
+        }
+    }
     
 }

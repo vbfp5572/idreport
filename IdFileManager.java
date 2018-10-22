@@ -27,8 +27,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -202,8 +207,14 @@ public class IdFileManager {
         int count = 0;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,"*.{png}")) {
             for (Path entry : stream) {
-                pathIsNotReadWriteLink(entry);
-                pathIsNotFile(entry);
+                try {
+                    pathIsNotFile(entry);
+                    pathIsNotReadWriteLink(entry);
+                } catch (IOException ex) {
+                    System.out.println(ex.getMessage());
+                    ex.printStackTrace();
+                    continue;
+                }
                 forReturn.add(entry);
                 count++;
             }
@@ -236,22 +247,24 @@ public class IdFileManager {
             System.out.println("[ERROR] Can`t read count files in work directory " + workPath.toString());
         }
     }
-    private void writeStady(String strSatdy){
-        Path checkProcessStadyPath = Paths.get(PATH_ROOT);
+    protected static List<String> readLinesFromFile(Path forReadPath){
+        try {
+            pathIsNotFile(forReadPath);
+            pathIsNotReadWriteLink(forReadPath);
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+            return new ArrayList<String>();
+        }
         List<String> lines = new ArrayList<>();
         try {
-            lines.addAll(Files.readAllLines(checkProcessStadyPath, Charset.forName("UTF-8")));
+            lines.addAll(Files.readAllLines(forReadPath, Charset.forName("UTF-8")));
         } catch (IOException ex) {
-            ex.getMessage();
+            System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
-        lines.add(strSatdy);
-        try {
-            Files.write(checkProcessStadyPath, lines, Charset.forName("UTF-8"));
-        } catch (IOException ex) {
-            ex.getMessage();
-            ex.printStackTrace();
-        }
+        return lines;
+        
     }
     private void copyFileFromSrcToDest(Path srcPath, Path destPath){
         try {
@@ -282,5 +295,20 @@ public class IdFileManager {
             + srcPath.toString()
             + " to " + destPath.toString());
         }
+    }
+    protected static String getNewProcessId(){
+        long currentDateTime = System.currentTimeMillis();
+      
+       //creating Date from millisecond
+       Date currentDate = new Date(currentDateTime);
+      
+       //printing value of Date
+       //System.out.println("current Date: " + currentDate);
+      
+       DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
+       
+      
+       //formatted value of current Date
+       return df.format(currentDate);
     }
 }
