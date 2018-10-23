@@ -15,6 +15,7 @@
  */
 package ru.vbfp.idreport;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -31,9 +32,15 @@ public class IdDictManager {
 
     public IdDictManager(ArrayList<String> linesFromFile, IdFileManager idOuterFmReport) {
         idInnerFmReport = idOuterFmReport;
-        dictFileManager = new IdDictFileManager();
+
+        dictFileManager = new IdDictFileManager(idOuterFmReport);
         linesReadedFromTextFiles = new CopyOnWriteArrayList<String>();
         linesReadedFromTextFiles.addAll(linesFromFile);
+    }
+    protected void putSplitLineAndPutToDictonaries(){
+        IdExStrSplitter spliterExec = new IdExStrSplitter(linesReadedFromTextFiles,
+            dictFileManager);
+        spliterExec.start();
     }
     
 }

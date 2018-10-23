@@ -102,15 +102,15 @@ public class IdFileManager {
         return readLinesFromFile;
     }
     
-    protected Path getDirDictWord(){
+    protected Path getDirDictonariesWord(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES_WORD);
     }
     
-    protected Path getDirReportDictonaries(){
+    protected Path getDirDictonaries(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES);
     }
     
-    protected Path getDirReportDictonariesUnfiltered(){
+    protected Path getDirDictonariesUnfiltered(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
     }
     
