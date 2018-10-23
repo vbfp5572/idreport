@@ -134,7 +134,7 @@ public class IdReporter {
             ArrayList<String> linesFiltered = new ArrayList<String>();
             //
             IdDictManager dictonariesManager = new IdDictManager(lines, idinnerFmReport);
-            
+            dictonariesManager.putSplitLineAndPutToDictonaries();
             //filter and write in this part of code
             linesFiltered.addAll(rowFilterNotAdaptive(lines));
             

@@ -79,6 +79,7 @@ public class IdExStrSplitter extends Thread  {
         
         try {
             Files.write(writedFile, lines, Charset.forName("UTF-8"));
+            System.out.println("Dictonaries writer in file " + writedFile.toString() + " put lines count " + lines.size());
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
