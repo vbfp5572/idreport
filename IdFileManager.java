@@ -324,7 +324,7 @@ public class IdFileManager {
             ex.printStackTrace();
             return new ArrayList<String>();
         }
-        List<String> lines = new ArrayList<>();
+        ArrayList<String> lines = new ArrayList<String>();
         try {
             lines.addAll(Files.readAllLines(forReadPath, Charset.forName("UTF-8")));
         } catch (IOException ex) {

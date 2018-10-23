@@ -32,14 +32,13 @@ public class IdDictManager {
 
     public IdDictManager(ArrayList<String> linesFromFile, IdFileManager idOuterFmReport) {
         idInnerFmReport = idOuterFmReport;
-
         dictFileManager = new IdDictFileManager(idOuterFmReport);
         linesReadedFromTextFiles = new CopyOnWriteArrayList<String>();
         linesReadedFromTextFiles.addAll(linesFromFile);
     }
     protected void putSplitLineAndPutToDictonaries(){
         IdExStrSplitter spliterExec = new IdExStrSplitter(linesReadedFromTextFiles,
-            dictFileManager);
+            idInnerFmReport);
         spliterExec.start();
     }
     

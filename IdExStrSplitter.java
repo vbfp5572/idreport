@@ -15,6 +15,12 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -24,24 +30,68 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class IdExStrSplitter extends Thread  {
     private CopyOnWriteArrayList<String> linesInnerFromSrc;
     private IdDictFileManager dictInnerFileManager;
+    private IdFileManager idInnerFmReport;
 
     public IdExStrSplitter(CopyOnWriteArrayList<String> linesReadedFromTextFiles,
-            IdDictFileManager dictFileManager) {
+            IdFileManager idOuterFmReport) {
+        idInnerFmReport = idOuterFmReport;
         linesInnerFromSrc = new CopyOnWriteArrayList<String>();
         linesInnerFromSrc.addAll(linesReadedFromTextFiles);
         linesReadedFromTextFiles.clear();
         //@todo create new dict file manager for this instance
-        dictInnerFileManager = dictFileManager;
+        dictInnerFileManager = new IdDictFileManager(idOuterFmReport);
     }
     
     @Override
     public void run() {
         for (String linesReadedFromTextFile : linesInnerFromSrc) {
             String[] wordFromFileReadedLine = linesReadedFromTextFile.split(" ");
+            Path dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getCheckDirForFileName();
+            ArrayList<String> fileLines = new ArrayList<String>();
+            fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
+            
             for (String string : wordFromFileReadedLine) {
-                
+                if( (fileLines.size() + 1) < dictInnerFileManager.getLinesLimit() ){
+                    fileLines.add(string);
+                }
+                else{
+                    putLinesToFile(dictonariesUnfilteredDirDeclineNewFile,fileLines);
+                    String replacedPath = dictonariesUnfilteredDirDeclineNewFile.toString().replace(
+                            dictInnerFileManager.getDefinedFileExtention(), dictInnerFileManager.getDefinedFileLockExtention());
+                    Path lockedFilePath = Paths.get(replacedPath);
+                    try{
+                        Files.createFile(lockedFilePath);
+                    } catch (IOException ex) {
+                        System.out.println(ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                    fileLines.clear();
+                    dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getDictonariesUnfilteredDirDeclineNewFile();
+                    fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
+                    fileLines.add(string);
+                }
             }
+            putLinesToFile(dictonariesUnfilteredDirDeclineNewFile,fileLines);
         }
         
+    }
+    private void putLinesToFile(Path writedFile, ArrayList<String> lines){
+        
+        try {
+            Files.write(writedFile, lines, Charset.forName("UTF-8"));
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+    private ArrayList<String> getFileLines(Path forReadPath){
+        ArrayList<String> lines = new ArrayList<String>();
+        try {
+            lines.addAll(Files.readAllLines(forReadPath, Charset.forName("UTF-8")));
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return lines;
     }
 }

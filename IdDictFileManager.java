@@ -16,12 +16,15 @@
 package ru.vbfp.idreport;
 
 import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -37,8 +40,10 @@ public class IdDictFileManager {
     private Path dirDictonariesWord;
     private Path currentReportFolder;
     
-    private String DECLINE = "decline";
-    private String ACCEPT = "accept";
+    private static final String DECLINE = "decline";
+    private static final String ACCEPT = "accept";
+    private static final String FILE_EXTENTION= ".dct";
+    private static final String FILE_FULL_EXTENTION= ".lck";
     
     private Integer FILE_LINES_LIMIT = 1000;
     
@@ -57,6 +62,67 @@ public class IdDictFileManager {
         
         checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
         checkOrCreateSubDictonariesUnfilteredDir(ACCEPT);
+    }
+    protected Integer getLinesLimit(){
+        return FILE_LINES_LIMIT;
+    }
+    protected String getDefinedFileExtention(){
+        return FILE_EXTENTION;
+    }
+    protected String getDefinedFileLockExtention(){
+        return FILE_FULL_EXTENTION;
+    }
+    protected Path getCheckDirForFileName(){
+        Path lookPath = checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,FILE_EXTENTION)) {
+            for (Path entry : stream) {
+                pathIsNotReadWriteLink(entry);
+                pathIsNotFile(entry);
+                String replacedPath = entry.toString().replace(FILE_EXTENTION, FILE_FULL_EXTENTION);
+                Path lockedFilePath = Paths.get(replacedPath);
+                if( Files.notExists(lockedFilePath) ){
+                    return entry;
+                }
+                count++;
+            }
+        if( count == 0 ){
+            System.out.println("Directory is Empty " + lookPath.toString());
+        }
+        } catch (IOException | DirectoryIteratorException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
+        }
+        Path returnFileName = getDictonariesUnfilteredDirDeclineNewFile();
+        return returnFileName;
+    }
+    protected Path getDictonariesUnfilteredDirDeclineNewFile(){
+        Path checkOrCreateSubDictonariesUnfilteredDir = checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
+        //@todo get new name or use founded
+        Path toReturn = Paths.get(checkOrCreateSubDictonariesUnfilteredDir.toString(),UUID.randomUUID().toString(),FILE_EXTENTION);
+        if( Files.exists(toReturn, LinkOption.NOFOLLOW_LINKS) ){
+            try {
+                pathIsNotFile(toReturn);
+                pathIsNotReadWriteLink(toReturn);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + toReturn.toString());
+            }
+        }
+        try {
+            Files.createFile(toReturn);
+            try {
+                pathIsNotFile(toReturn);
+                pathIsNotReadWriteLink(toReturn);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + toReturn.toString());
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t createFile " + toReturn.toString());
+        }
+        return toReturn;
     }
     private Path checkOrCreateSubDictonariesDir(String subDirName){
          Path forCheckOrCreateDir = Paths.get(dirDictonaries.toString(),subDirName);
