@@ -75,7 +75,7 @@ public class IdDictFileManager {
     protected Path getCheckDirForFileName(){
         Path lookPath = checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
         int count = 0;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,FILE_EXTENTION)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,"*.{dct}")) {
             for (Path entry : stream) {
                 pathIsNotReadWriteLink(entry);
                 pathIsNotFile(entry);

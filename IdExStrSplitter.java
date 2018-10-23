@@ -47,9 +47,11 @@ public class IdExStrSplitter extends Thread  {
         for (String linesReadedFromTextFile : linesInnerFromSrc) {
             String[] wordFromFileReadedLine = linesReadedFromTextFile.split(" ");
             Path dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getCheckDirForFileName();
+            
             ArrayList<String> fileLines = new ArrayList<String>();
             fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
-            
+            System.out.println("In file " + dictonariesUnfilteredDirDeclineNewFile.toString()
+                    + " lines readed " + fileLines.size());
             for (String string : wordFromFileReadedLine) {
                 if( (fileLines.size() + 1) < dictInnerFileManager.getLinesLimit() ){
                     fileLines.add(string);
@@ -71,6 +73,8 @@ public class IdExStrSplitter extends Thread  {
                     fileLines.add(string);
                 }
             }
+            System.out.println("[NORMAL]In file " + dictonariesUnfilteredDirDeclineNewFile.toString()
+                    + " lines readed " + fileLines.size());
             putLinesToFile(dictonariesUnfilteredDirDeclineNewFile,fileLines);
         }
         
