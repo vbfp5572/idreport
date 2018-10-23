@@ -49,7 +49,7 @@ public class IdReporter {
     private Integer rowCount;
     private Integer colCount;
     private Path excelFile;
-    private static final int FILE_ROW_LIMIT = 1000;
+    private static final int FILE_ROW_LIMIT = 100000;
     private String sheetName = "Reestr";
     private XSSFWorkbook wb;
     private XSSFSheet sheet;
@@ -104,6 +104,7 @@ public class IdReporter {
         saveXlsFile();
     }
     private List<String> rowFilterNotAdaptive(List<String> linesOuter){
+        int catchedCount = 0;
         int percentABK = 0;
         int percentAOCP = 0;
         int percentAOCP1 = 0;
@@ -117,240 +118,162 @@ public class IdReporter {
                 strFiltered.add(strForAdd);
                 //AOCP - 1 str
                 
-                if( stringForFilter.contains("приложение №3") ){
+                if( stringForFilter.contains("приложение") ){
                     percentAOCP++;
                     percentAOCP1++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("освидетельствования") ){
                     percentAOCP++;
                     percentAOCP1++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("скрытых") ){
                     percentAOCP++;
                     percentAOCP1++;
+                    catchedCount++;
                 }
                 //AOCP - 2 str
                 if( stringForFilter.contains("составлен") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("экземплярах") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("сведения") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("дополнительные") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("разрешается") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("предъявлены") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("документы") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("подтверждающие") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("соответствие") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("предъявляемым") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("требованиям") ){
                     percentAOCP++;
                     percentAOCP2++;
+                    catchedCount++;
                 }
                 //ABK
                 if( stringForFilter.contains("результатах") ){
                     percentABK++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("проверки") ){
                     percentABK++;
+                    catchedCount++;
                 }
                 if( stringForFilter.contains("изделий") ){
                     percentABK++;
+                    catchedCount++;
                 }
-                
-                
-                
-                
-                //part rules for decline strings
-                /*if( stringForFilter.contains("фамилия") ){
-                    continue;
-                }*/
-                //part rules for accept strings
-                /*if( stringForFilter.contains("акт") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("вид") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("№") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("соответствие") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("дата") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("техдокументации") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("работ") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("сплошной") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("освидетельствования") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("выборочный") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("монтаж") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("своим") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("погружение") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("геометрическим") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("забивка") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("размерам") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("нанесение") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("данным") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("грунтовка") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("сопроводительной") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("скрытых") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("документации") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("проекту") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("характеристики") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("паспорт") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("механических") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("сертификат") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("свойств") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("схема") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("предназначенных") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("труба") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( stringForFilter.contains("проектом") ){
+                    percentABK++;
+                    catchedCount++;
                 }
-                if( stringForFilter.contains("результат") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+            }
+            if( catchedCount > 0 ){
+                if( (percentABK/catchedCount) > (percentAOCP/catchedCount) ){
+                    strFiltered.set(1, ABK_DETECTED);
                 }
-                if( stringForFilter.contains("свая") ){
-                    strFiltered.add(strForAdd);
-                    continue;
+                if( (percentABK/catchedCount) < (percentAOCP/catchedCount) ){
+                    strFiltered.set(1, AOCP_DETECTED);
                 }
-                if( stringForFilter.contains("балка") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("траверса") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("отвод") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("переход") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("тройник") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("смесь") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("январ") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("феврал") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("март") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("апрел") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("май") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("июн") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("июл") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("август") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("сентябр") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("октябр") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("ноябр") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("декабр") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("номер") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                
-                if( stringForFilter.contains("протокол") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }
-                if( stringForFilter.contains("filename") ){
-                    strFiltered.add(strForAdd);
-                    continue;
-                }*/
-            
             }
         }
         return strFiltered;

@@ -33,7 +33,9 @@ public class IdReport {
         //idFmReport.printStoragesList();
         
         Integer sizeStoragesList = idFmReport.getSizeStoragesList();
-        for (int i = 0; i < sizeStoragesList; i++) {
+        
+        
+        for (int i = 0; i < 7; i++) {
             System.out.println("Current storage:");
             System.out.println(idFmReport.getCurrentStorage().toString());
         
