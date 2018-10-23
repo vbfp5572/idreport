@@ -46,6 +46,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @author vbfp
  */
 public class IdReporter {
+    private IdXlsGlobReport xlsSummaryReport;
     private String srcFileName;
     private Integer rowCount;
     private Integer colCount;
@@ -68,10 +69,12 @@ public class IdReporter {
     private String AOCP_PAGE1_DETECTED = "|_|_|_|_|AOCP-P1|_|_|_|_|";
     private String AOCP_PAGE2_DETECTED = "|_|_|_|_|AOCP-P2|_|_|_|_|";
     private String ABK_DETECTED = "|_|_|_|_|ABK|_|_|_|_|";
+    private String ALL_LINES_NOT_FILTERED = "|_|_|_|_|allLinesNotFilteredInFile|_|_|_|_|";
     
     
     private ArrayList<Path> filesForReport;
     public IdReporter(ArrayList<Path> filesInWorkTxtTesseractDir, IdFileManager idOuterFmReport) {
+        xlsSummaryReport = null;
         idinnerFmReport = idOuterFmReport;
         filesForReport = filesInWorkTxtTesseractDir;
         rowCount = 5;
@@ -83,6 +86,20 @@ public class IdReporter {
         
         currentReportFolder = idinnerFmReport.getCurrentReportDir();
     }
+    public IdReporter(ArrayList<Path> filesInWorkTxtTesseractDir, IdFileManager idOuterFmReport, IdXlsGlobReport xlsOuterSummaryReport) {
+        xlsSummaryReport = xlsOuterSummaryReport;
+        idinnerFmReport = idOuterFmReport;
+        filesForReport = filesInWorkTxtTesseractDir;
+        rowCount = 5;
+        colCount = 7;
+        excelFile = idinnerFmReport.getXlsReportFileName();
+        wb = new XSSFWorkbook();
+        sheet = wb.createSheet(sheetName);
+        srcFileName = "";
+        
+        currentReportFolder = idinnerFmReport.getCurrentReportDir();
+    }
+    
     protected void setSrcFileName(String srcOuterFileName){
         srcFileName = srcOuterFileName.substring(0,srcOuterFileName.indexOf("|||||"));
         Path pathSrcFile = Paths.get(srcFileName);
@@ -90,6 +107,12 @@ public class IdReporter {
         XSSFRow row = sheet.createRow(rowCount);
         XSSFCell cell = row.createCell(colCount + 1);
         cell.setCellValue(pathSrcFiletoString);
+        
+        if( xlsSummaryReport != null ){
+            ArrayList<String> srcRows = new ArrayList<String>();
+            srcRows.add(pathSrcFiletoString);
+            xlsSummaryReport.addRow(srcRows);
+        }
         rowCount++;
                 
     }
@@ -97,9 +120,9 @@ public class IdReporter {
         for (Path elementFile : this.filesForReport) {
             String strFileName = elementFile.toString();
             
-            List<String> lines = new ArrayList<>();
+            ArrayList<String> lines = new ArrayList<String>();
             lines.add(strFileName);
-            lines.add("|_|_|_|_|NotDetectedType|_|_|_|_|");
+            lines.add(NOT_DETECTED);
             try {
                 lines.addAll(Files.readAllLines(elementFile, Charset.forName("UTF-8")));
             } catch (IOException ex) {
@@ -108,7 +131,10 @@ public class IdReporter {
             }
             lines.add("|_|_|_|_|allLinesNotFilteredInFile|_|_|_|_|");
             lines.add(strFileName);
-            List<String> linesFiltered = new ArrayList<>();
+            ArrayList<String> linesFiltered = new ArrayList<String>();
+            //
+            IdDictManager dictonariesManager = new IdDictManager(lines, idinnerFmReport);
+            
             //filter and write in this part of code
             linesFiltered.addAll(rowFilterNotAdaptive(lines));
             
@@ -120,6 +146,7 @@ public class IdReporter {
         saveXlsFile();
     }
     private List<String> rowFilterNotAdaptive(List<String> linesOuter){
+        
         int catchedAktOther = 0;
         int catchedCount = 0;
         int percentABK = 0;
@@ -132,78 +159,123 @@ public class IdReporter {
             linesCount++;
             String stringForFilter = new String(strForAdd.toLowerCase().getBytes());
             if( !stringForFilter.isEmpty() ){
-                strFiltered.add(strForAdd);
-                //AOCP - 1 str
                 
+                //AOCP - 1 str
+                strFiltered.add(strForAdd);
                 if( stringForFilter.contains("приложение") ){
                     percentAOCP++;
-                    percentAOCP1++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("акт") ){
+                    percentAOCP++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("освидетельствования") ){
                     percentAOCP++;
-                    percentAOCP1++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("скрытых") ){
                     percentAOCP++;
-                    percentAOCP1++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("работ") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("представитель") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("застройщика") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("или") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("заказчика") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("вопросам") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("строительного") ){
+                    percentAOCP++;
+                    
+                    catchedCount++;
+                }
+                if( stringForFilter.contains("контроля") ){
+                    percentAOCP++;
+                    
                     catchedCount++;
                 }
                 //AOCP - 2 str
                 if( stringForFilter.contains("составлен") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("экземплярах") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("сведения") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("дополнительные") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("разрешается") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("предъявлены") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("документы") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("подтверждающие") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("соответствие") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("предъявляемым") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                    
                     catchedCount++;
                 }
                 if( stringForFilter.contains("требованиям") ){
                     percentAOCP++;
-                    percentAOCP2++;
+                   
                     catchedCount++;
                 }
                 //ABK
@@ -283,6 +355,8 @@ public class IdReporter {
                     percentABK++;
                     catchedCount++;
                 }
+                
+                
             }
             if( catchedCount > 0 ){
                 if( (percentABK/catchedCount) > (percentAOCP/catchedCount) ){
@@ -490,6 +564,9 @@ public class IdReporter {
     }
 
     protected void reportWriterXlsx(List<String> linesOuter){
+        if( xlsSummaryReport != null ){
+            xlsSummaryReport.addRow(linesOuter);
+        }
         String fileName = "";
         rowCount++;
         XSSFRow row = sheet.createRow(rowCount);

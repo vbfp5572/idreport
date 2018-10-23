@@ -46,6 +46,7 @@ public class IdFileManager {
     private static final String XLS_REPORTS = "xlsx";
     private static final String DIR_DICTONARIES = "dict";
     private static final String DIR_DICTONARIES_UNFILTERED = "dict-unf";
+    private static final String DIR_DICTONARIES_WORD = "dict-word";
     private static final String FILE_ALL_UNFILTERED_WORD = "dict-unf.txt";
     private static final String FILE_ALL_UNFILTERED_STATS = "stat.txt";
     private static final String FIELD_SEPARATOR = "|_|_|_|_|";
@@ -90,6 +91,7 @@ public class IdFileManager {
         checkOrCreateSubWorkDir(XLS_REPORTS);
         checkOrCreateSubWorkDir(DIR_DICTONARIES);
         checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
+        checkOrCreateSubWorkDir(DIR_DICTONARIES_WORD);
         
     }
     protected List<String> getProcessStContent(){
@@ -99,18 +101,23 @@ public class IdFileManager {
         readLinesFromFile.addAll(readLinesFromFile(processSt));
         return readLinesFromFile;
     }
-    protected Path getDirReportHTML(){
-       return checkOrCreateSubWorkDir(HTML);
+    
+    protected Path getDirDictWord(){
+       return checkOrCreateSubWorkDir(DIR_DICTONARIES_WORD);
     }
+    
     protected Path getDirReportDictonaries(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES);
     }
+    
     protected Path getDirReportDictonariesUnfiltered(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
     }
+    
     protected Path getDirReportXls(){
        return checkOrCreateSubWorkDir(XLS_REPORTS);
     }
+    
     protected Path getCurrentStorage(){
         if( storageIndex < 0 ){
             throw new IllegalArgumentException("Work Storages not found");
@@ -219,6 +226,27 @@ public class IdFileManager {
                     System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
                 }
         }
+    }
+    protected ArrayList<Path> getXlsxFilesFromReportDir(){
+        ArrayList<Path> forReturn = new ArrayList<Path>();
+        Path lookPath = getDirReportXls();
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,"*.{xlsx}")) {
+            for (Path entry : stream) {
+                pathIsNotReadWriteLink(entry);
+                pathIsNotFile(entry);
+                forReturn.add(entry);
+                count++;
+            }
+        if( count == 0 ){
+            System.out.println("Directory is Empty " + lookPath.toString());
+        }
+        } catch (IOException | DirectoryIteratorException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
+        }
+        return forReturn;
+            
     }
     protected ArrayList<Path> getTextFilesFromCurrentStorage(){
         ArrayList<Path> forReturn = new ArrayList<Path>();

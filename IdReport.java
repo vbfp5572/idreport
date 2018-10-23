@@ -16,6 +16,7 @@
 package ru.vbfp.idreport;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -35,6 +36,7 @@ public class IdReport {
         Integer sizeStoragesList = idFmReport.getSizeStoragesList();
         
         
+        IdXlsGlobReport xlsSummaryReport = new IdXlsGlobReport(idFmReport);
         
         for (int i = 0; i < sizeStoragesList; i++) {
             System.out.println("Current storage:");
@@ -61,13 +63,19 @@ public class IdReport {
                 //@todo in iterations use here continue;
             }
             IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
-            IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport);
+            IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport,xlsSummaryReport);
             reporterToXls.setSrcFileName(readedSrcString);
             reporterToXls.processFileFromList();
             forImagesFiles.clear();
             forTextFiles.clear();
             idFmReport.setNextCurrentStorage();
         }
+        xlsSummaryReport.saveXlsFile();
+        /*ArrayList<Path> dirReportXls = new ArrayList<Path> ();
+        dirReportXls.addAll(idFmReport.getXlsxFilesFromReportDir());
+        System.out.println("Files *.xlsx count: " + dirReportXls.size());
+        IdXlsxReportFilesSummator reportSummator = new IdXlsxReportFilesSummator(dirReportXls);
+        reportSummator.processReportSum();*/
     }
     
 }
