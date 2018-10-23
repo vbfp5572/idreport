@@ -92,6 +92,13 @@ public class IdFileManager {
         checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
         
     }
+    protected List<String> getProcessStContent(){
+        Path currentStorage = getCurrentStorage();
+        Path processSt = Paths.get(currentStorage.toString(),IS_PROCESSED);
+        ArrayList<String> readLinesFromFile = new ArrayList<String>();
+        readLinesFromFile.addAll(readLinesFromFile(processSt));
+        return readLinesFromFile;
+    }
     protected Path getDirReportHTML(){
        return checkOrCreateSubWorkDir(HTML);
     }

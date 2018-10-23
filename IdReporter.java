@@ -46,6 +46,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @author vbfp
  */
 public class IdReporter {
+    private String srcFileName;
     private Integer rowCount;
     private Integer colCount;
     private Path excelFile;
@@ -58,6 +59,12 @@ public class IdReporter {
     
     private String NOT_DETECTED = "|_|_|_|_|NotDetectedType|_|_|_|_|";
     private String AOCP_DETECTED = "|_|_|_|_|AOCP|_|_|_|_|";
+    private String AKT_OTHER = "|_|_|_|_|OTHER_AKT|_|_|_|_|";
+    private String SCHEME = "|_|_|_|_|SCHEME|_|_|_|_|";
+    private String PROTOKOL = "|_|_|_|_|PROTOKOL|_|_|_|_|";
+    private String REZULT = "|_|_|_|_|RESULT|_|_|_|_|";
+    private String SERTIFICAT = "|_|_|_|_|SERTIFICAT|_|_|_|_|";
+    private String PASPORT = "|_|_|_|_|PASPORT|_|_|_|_|";
     private String AOCP_PAGE1_DETECTED = "|_|_|_|_|AOCP-P1|_|_|_|_|";
     private String AOCP_PAGE2_DETECTED = "|_|_|_|_|AOCP-P2|_|_|_|_|";
     private String ABK_DETECTED = "|_|_|_|_|ABK|_|_|_|_|";
@@ -67,16 +74,25 @@ public class IdReporter {
     public IdReporter(ArrayList<Path> filesInWorkTxtTesseractDir, IdFileManager idOuterFmReport) {
         idinnerFmReport = idOuterFmReport;
         filesForReport = filesInWorkTxtTesseractDir;
-        rowCount = 0;
-        colCount = 0;
+        rowCount = 5;
+        colCount = 7;
         excelFile = idinnerFmReport.getXlsReportFileName();
         wb = new XSSFWorkbook();
         sheet = wb.createSheet(sheetName);
-        
+        srcFileName = "";
         
         currentReportFolder = idinnerFmReport.getCurrentReportDir();
     }
-    
+    protected void setSrcFileName(String srcOuterFileName){
+        srcFileName = srcOuterFileName.substring(0,srcOuterFileName.indexOf("|||||"));
+        Path pathSrcFile = Paths.get(srcFileName);
+        String pathSrcFiletoString = pathSrcFile.getFileName().toString();
+        XSSFRow row = sheet.createRow(rowCount);
+        XSSFCell cell = row.createCell(colCount + 1);
+        cell.setCellValue(pathSrcFiletoString);
+        rowCount++;
+                
+    }
     protected void processFileFromList(){
         for (Path elementFile : this.filesForReport) {
             String strFileName = elementFile.toString();
@@ -104,6 +120,7 @@ public class IdReporter {
         saveXlsFile();
     }
     private List<String> rowFilterNotAdaptive(List<String> linesOuter){
+        int catchedAktOther = 0;
         int catchedCount = 0;
         int percentABK = 0;
         int percentAOCP = 0;
@@ -274,6 +291,27 @@ public class IdReporter {
                 if( (percentABK/catchedCount) < (percentAOCP/catchedCount) ){
                     strFiltered.set(1, AOCP_DETECTED);
                 }
+            }
+            else{
+                if( stringForFilter.contains("акт") ){
+                    strFiltered.set(1, AKT_OTHER);
+                }
+                if( stringForFilter.contains("схема") ){
+                    strFiltered.set(1, SCHEME);
+                }
+                if( stringForFilter.contains("протокол") ){
+                    strFiltered.set(1, PROTOKOL);
+                }
+                if( stringForFilter.contains("результат") ){
+                    strFiltered.set(1, REZULT);
+                }
+                if( stringForFilter.contains("сертификат") ){
+                    strFiltered.set(1, SERTIFICAT);
+                }
+                if( stringForFilter.contains("паспорт") ){
+                    strFiltered.set(1, PASPORT);
+                }
+                
             }
         }
         return strFiltered;
@@ -455,13 +493,13 @@ public class IdReporter {
         String fileName = "";
         rowCount++;
         XSSFRow row = sheet.createRow(rowCount);
-        int colCount = 7;
+        int colForWrite = colCount;
         
         for (String stringToXlsxCell : linesOuter) {
-            colCount++;
+            colForWrite++;
             
             
-            XSSFCell cell = row.createCell(colCount);
+            XSSFCell cell = row.createCell(colForWrite);
             cell.setCellValue(stringToXlsxCell);
             
             if( (rowCount > FILE_ROW_LIMIT) || (rowCount == 0) ){
@@ -476,8 +514,9 @@ public class IdReporter {
                     sheet = null;
                     wb = new XSSFWorkbook();
                     sheet = wb.createSheet(sheetName);
+                    
                 }
-                rowCount = 1;
+                rowCount = 5;
                 excelFile = idinnerFmReport.getXlsReportFileName();
                 try {
                     if( !Files.exists(excelFile, LinkOption.NOFOLLOW_LINKS ) ){

@@ -35,10 +35,15 @@ public class IdReport {
         Integer sizeStoragesList = idFmReport.getSizeStoragesList();
         
         
-        for (int i = 0; i < 7; i++) {
+        
+        for (int i = 0; i < sizeStoragesList; i++) {
             System.out.println("Current storage:");
             System.out.println(idFmReport.getCurrentStorage().toString());
-        
+            
+            ArrayList<String> processStLines = new ArrayList<String>();
+            processStLines.addAll(idFmReport.getProcessStContent());
+            String readedSrcString = processStLines.get(0);
+            
             ArrayList<Path> forTextFiles = new ArrayList<Path>();
             forTextFiles.addAll(idFmReport.getTextFilesFromCurrentStorage());
 
@@ -57,6 +62,7 @@ public class IdReport {
             }
             IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
             IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport);
+            reporterToXls.setSrcFileName(readedSrcString);
             reporterToXls.processFileFromList();
             forImagesFiles.clear();
             forTextFiles.clear();
