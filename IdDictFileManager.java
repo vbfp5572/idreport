@@ -99,7 +99,7 @@ public class IdDictFileManager {
     protected Path getDictonariesUnfilteredDirDeclineNewFile(){
         Path checkOrCreateSubDictonariesUnfilteredDir = checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
         //@todo get new name or use founded
-        Path toReturn = Paths.get(checkOrCreateSubDictonariesUnfilteredDir.toString(),UUID.randomUUID().toString(),FILE_EXTENTION);
+        Path toReturn = Paths.get(checkOrCreateSubDictonariesUnfilteredDir.toString(),UUID.randomUUID().toString() + FILE_EXTENTION);
         if( Files.exists(toReturn, LinkOption.NOFOLLOW_LINKS) ){
             try {
                 pathIsNotFile(toReturn);
