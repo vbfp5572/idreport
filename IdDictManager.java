@@ -55,7 +55,7 @@ public class IdDictManager {
                 }
             }
         }
-        putLinesToFile(checkDirForFileName, linesFromFile);
+        putLinesToFile(checkDirForFileName, fileLines);
         checkDirForFileName = setLockAndGetNewName(checkDirForFileName);
     }
     private void putLinesToFile(Path writedFile, ArrayList<String> lines){
