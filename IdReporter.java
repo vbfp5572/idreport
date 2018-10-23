@@ -47,6 +47,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class IdReporter {
     private IdXlsGlobReport xlsSummaryReport;
+    IdDictManager dictonariesManager;
+    
     private String srcFileName;
     private Integer rowCount;
     private Integer colCount;
@@ -72,6 +74,7 @@ public class IdReporter {
     private String ALL_LINES_NOT_FILTERED = "|_|_|_|_|allLinesNotFilteredInFile|_|_|_|_|";
     
     
+    
     private ArrayList<Path> filesForReport;
     public IdReporter(ArrayList<Path> filesInWorkTxtTesseractDir, IdFileManager idOuterFmReport) {
         xlsSummaryReport = null;
@@ -85,6 +88,7 @@ public class IdReporter {
         srcFileName = "";
         
         currentReportFolder = idinnerFmReport.getCurrentReportDir();
+        dictonariesManager = new IdDictManager(idinnerFmReport);
     }
     public IdReporter(ArrayList<Path> filesInWorkTxtTesseractDir, IdFileManager idOuterFmReport, IdXlsGlobReport xlsOuterSummaryReport) {
         xlsSummaryReport = xlsOuterSummaryReport;
@@ -98,6 +102,7 @@ public class IdReporter {
         srcFileName = "";
         
         currentReportFolder = idinnerFmReport.getCurrentReportDir();
+        dictonariesManager = new IdDictManager(idinnerFmReport);
     }
     
     protected void setSrcFileName(String srcOuterFileName){
@@ -117,7 +122,10 @@ public class IdReporter {
                 
     }
     protected void processFileFromList(){
+        int countFiles = this.filesForReport.size();
+        int iterationCount = 0;
         for (Path elementFile : this.filesForReport) {
+            iterationCount++;
             String strFileName = elementFile.toString();
             
             ArrayList<String> lines = new ArrayList<String>();
@@ -133,8 +141,11 @@ public class IdReporter {
             lines.add(strFileName);
             ArrayList<String> linesFiltered = new ArrayList<String>();
             //
-            IdDictManager dictonariesManager = new IdDictManager(lines, idinnerFmReport);
-            dictonariesManager.putSplitLineAndPutToDictonaries();
+            Boolean lastFileFlag = Boolean.FALSE;
+            if( countFiles == iterationCount ){
+                lastFileFlag = Boolean.TRUE;
+            }
+            dictonariesManager.putSplitLineAndPutToDictonaries(lines, lastFileFlag);
             //filter and write in this part of code
             linesFiltered.addAll(rowFilterNotAdaptive(lines));
             

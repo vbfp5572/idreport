@@ -31,9 +31,11 @@ public class IdExStrSplitter extends Thread  {
     private CopyOnWriteArrayList<String> linesInnerFromSrc;
     private IdDictFileManager dictInnerFileManager;
     private IdFileManager idInnerFmReport;
+    private Integer counSummary;
 
     public IdExStrSplitter(CopyOnWriteArrayList<String> linesReadedFromTextFiles,
             IdFileManager idOuterFmReport) {
+        counSummary = 0;
         idInnerFmReport = idOuterFmReport;
         linesInnerFromSrc = new CopyOnWriteArrayList<String>();
         linesInnerFromSrc.addAll(linesReadedFromTextFiles);
@@ -44,40 +46,39 @@ public class IdExStrSplitter extends Thread  {
     
     @Override
     public void run() {
+        counSummary = counSummary + linesInnerFromSrc.size();
+        System.out.println("[COUNTLINES] " + counSummary);
+        Path dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getDictonariesUnfilteredDirDeclineNewFile();
         for (String linesReadedFromTextFile : linesInnerFromSrc) {
             String[] wordFromFileReadedLine = linesReadedFromTextFile.split(" ");
-            Path dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getCheckDirForFileName();
-            
             ArrayList<String> fileLines = new ArrayList<String>();
-            fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
-            System.out.println("In file " + dictonariesUnfilteredDirDeclineNewFile.toString()
-                    + " lines readed " + fileLines.size());
-            for (String string : wordFromFileReadedLine) {
-                if( (fileLines.size() + 1) < dictInnerFileManager.getLinesLimit() ){
-                    fileLines.add(string);
-                }
-                else{
-                    putLinesToFile(dictonariesUnfilteredDirDeclineNewFile,fileLines);
-                    String replacedPath = dictonariesUnfilteredDirDeclineNewFile.toString().replace(
-                            dictInnerFileManager.getDefinedFileExtention(), dictInnerFileManager.getDefinedFileLockExtention());
-                    Path lockedFilePath = Paths.get(replacedPath);
-                    try{
-                        Files.createFile(lockedFilePath);
-                    } catch (IOException ex) {
-                        System.out.println(ex.getMessage());
-                        ex.printStackTrace();
-                    }
-                    fileLines.clear();
-                    dictonariesUnfilteredDirDeclineNewFile = dictInnerFileManager.getDictonariesUnfilteredDirDeclineNewFile();
-                    fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
-                    fileLines.add(string);
+            //fileLines.addAll(getFileLines(dictonariesUnfilteredDirDeclineNewFile));
+            for (String stringToAdd : wordFromFileReadedLine) {
+                if(!stringToAdd.isEmpty()){
+                    fileLines.add(stringToAdd);
                 }
             }
-            System.out.println("[NORMAL]In file " + dictonariesUnfilteredDirDeclineNewFile.toString()
-                    + " lines readed " + fileLines.size());
             putLinesToFile(dictonariesUnfilteredDirDeclineNewFile,fileLines);
+            dictonariesUnfilteredDirDeclineNewFile = setLockAndGetNewName(dictonariesUnfilteredDirDeclineNewFile);
         }
         
+    }
+    private Path setLockAndGetNewName(Path inputFileName){
+        String replacedPath = inputFileName.toString().replace(
+                        dictInnerFileManager.getDefinedFileExtention(), dictInnerFileManager.getDefinedFileLockExtention());
+        Path lockedFilePath = Paths.get(replacedPath);
+        System.out.println("[GETFORLOCK]In file " + lockedFilePath.toString());
+        try{
+            if( Files.notExists(lockedFilePath) ){
+                Files.createFile(lockedFilePath);
+            }
+            System.out.println("[CREATELOCK]In file " + lockedFilePath.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Cant create lock file " + lockedFilePath.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return dictInnerFileManager.getDictonariesUnfilteredDirDeclineNewFile();
     }
     private void putLinesToFile(Path writedFile, ArrayList<String> lines){
         
@@ -94,7 +95,7 @@ public class IdExStrSplitter extends Thread  {
         try {
             lines.addAll(Files.readAllLines(forReadPath, Charset.forName("UTF-8")));
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            System.out.println("[ERROR]Can`t read from file " + forReadPath.toString() + "[MESSAGE]" + ex.getMessage());
             ex.printStackTrace();
         }
         return lines;

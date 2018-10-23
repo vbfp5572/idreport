@@ -15,7 +15,11 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -27,19 +31,57 @@ public class IdDictManager {
     
     private IdDictFileManager dictFileManager;
     private IdFileManager idInnerFmReport;
-    
-    private CopyOnWriteArrayList<String> linesReadedFromTextFiles;
 
-    public IdDictManager(ArrayList<String> linesFromFile, IdFileManager idOuterFmReport) {
+
+    public IdDictManager(IdFileManager idOuterFmReport) {
         idInnerFmReport = idOuterFmReport;
         dictFileManager = new IdDictFileManager(idOuterFmReport);
-        linesReadedFromTextFiles = new CopyOnWriteArrayList<String>();
+    }
+    protected void putSplitLineAndPutToDictonaries(ArrayList<String> linesFromFile, Boolean lastFileOuterFlag){
+        /*CopyOnWriteArrayList<String> linesReadedFromTextFiles = new CopyOnWriteArrayList<String>();
         linesReadedFromTextFiles.addAll(linesFromFile);
-    }
-    protected void putSplitLineAndPutToDictonaries(){
+        if( (linesReadedFromTextFiles.size() > 1000) || lastFileOuterFlag ){
         IdExStrSplitter spliterExec = new IdExStrSplitter(linesReadedFromTextFiles,
-            idInnerFmReport);
+        idInnerFmReport);
         spliterExec.start();
+        }*/
+        Path checkDirForFileName = dictFileManager.getCheckDirForFileName();
+        ArrayList<String> fileLines = new ArrayList<String>();
+        for (String linesReadedFromTextFile : linesFromFile) {
+            String[] wordFromFileReadedLine = linesReadedFromTextFile.split(" ");
+            for (String stringToAdd : wordFromFileReadedLine) {
+                if( !stringToAdd.isEmpty() ){
+                    fileLines.add(stringToAdd);
+                }
+            }
+        }
+        putLinesToFile(checkDirForFileName, linesFromFile);
+        checkDirForFileName = setLockAndGetNewName(checkDirForFileName);
     }
-    
+    private void putLinesToFile(Path writedFile, ArrayList<String> lines){
+            try {
+                Files.write(writedFile, lines, Charset.forName("UTF-8"));
+                System.out.println("Dictonaries writer in file " + writedFile.toString() + " put lines count " + lines.size());
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+                ex.printStackTrace();
+            }
+    }
+    private Path setLockAndGetNewName(Path inputFileName){
+        String replacedPath = inputFileName.toString().replace(
+                        dictFileManager.getDefinedFileExtention(), dictFileManager.getDefinedFileLockExtention());
+        Path lockedFilePath = Paths.get(replacedPath);
+        System.out.println("[GETFORLOCK]In file " + lockedFilePath.toString());
+        try{
+            if( Files.notExists(lockedFilePath) ){
+                Files.createFile(lockedFilePath);
+            }
+            System.out.println("[CREATELOCK]In file " + lockedFilePath.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Cant create lock file " + lockedFilePath.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return dictFileManager.getDictonariesUnfilteredDirDeclineNewFile();
+    }
 }
