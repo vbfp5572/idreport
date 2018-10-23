@@ -31,31 +31,35 @@ public class IdReport {
         // TODO code application logic here
         IdFileManager idFmReport = new IdFileManager();
         //idFmReport.printStoragesList();
-        System.out.println("Current storage:");
-        System.out.println(idFmReport.getCurrentStorage().toString());
         
-        ArrayList<Path> forTextFiles = new ArrayList<Path>();
-        forTextFiles.addAll(idFmReport.getTextFilesFromCurrentStorage());
+        Integer sizeStoragesList = idFmReport.getSizeStoragesList();
+        for (int i = 0; i < sizeStoragesList; i++) {
+            System.out.println("Current storage:");
+            System.out.println(idFmReport.getCurrentStorage().toString());
         
-        
-        ArrayList<Path> forImagesFiles = new ArrayList<Path>();
-        forImagesFiles.addAll(idFmReport.getImagesFilesFromCurrentStorage());
-        if( forImagesFiles.size() == forTextFiles.size() ){
-            System.out.println("Files count in text and images storage: " + forTextFiles.size());
-        }
-        else{
-            System.out.println("Files count in text: " + forTextFiles.size()
-                    + ", images: " + forImagesFiles.size()
-                    + ", count of files is wrong, choise next storage");
+            ArrayList<Path> forTextFiles = new ArrayList<Path>();
+            forTextFiles.addAll(idFmReport.getTextFilesFromCurrentStorage());
+
+
+            ArrayList<Path> forImagesFiles = new ArrayList<Path>();
+            forImagesFiles.addAll(idFmReport.getImagesFilesFromCurrentStorage());
+            if( forImagesFiles.size() == forTextFiles.size() ){
+                System.out.println("Files count in text and images storage: " + forTextFiles.size());
+            }
+            else{
+                System.out.println("Files count in text: " + forTextFiles.size()
+                        + ", images: " + forImagesFiles.size()
+                        + ", count of files is wrong, choise next storage");
+                idFmReport.setNextCurrentStorage();
+                //@todo in iterations use here continue;
+            }
+            IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
+            IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport);
+            reporterToXls.processFileFromList();
+            forImagesFiles.clear();
+            forTextFiles.clear();
             idFmReport.setNextCurrentStorage();
-            //@todo in iterations use here continue;
         }
-        IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
-        IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport);
-        reporterToXls.processFileFromList();
-        forImagesFiles.clear();
-        forTextFiles.clear();
-        
     }
     
 }

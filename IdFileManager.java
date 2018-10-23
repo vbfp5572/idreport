@@ -191,6 +191,9 @@ public class IdFileManager {
             System.out.println(lookPath.toString());
         }
     }
+    protected Integer getSizeStoragesList(){
+        return storagesList.size();
+    }
     protected void getStoragesFromWorkFolders(){
         for (Path lookPath : workFolders) {
             int count = 0;

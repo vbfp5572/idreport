@@ -31,12 +31,13 @@ public class IdTextFileFilter {
     private IdFileManager idinnerFmReport;
 
     public IdTextFileFilter(ArrayList<Path> forImagesFiles, ArrayList<Path> forTextFiles, IdFileManager idOuterFmReport) {
+        idinnerFmReport = idOuterFmReport;
         currentFileStrings = new ArrayList<String>();
         listImagesFiles = new ArrayList<Path>();
         listTextFiles = new ArrayList<Path>();
         listImagesFiles.addAll(forImagesFiles);
         listTextFiles.addAll(forTextFiles);
-        idinnerFmReport = idOuterFmReport;
+        
         currentReportFolder = idinnerFmReport.getCurrentReportDir();
     }
     protected void createReportFromFiles(){

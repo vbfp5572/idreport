@@ -49,12 +49,18 @@ public class IdReporter {
     private Integer rowCount;
     private Integer colCount;
     private Path excelFile;
-    private static final int FILE_ROW_LIMIT = 100000;
+    private static final int FILE_ROW_LIMIT = 1000;
     private String sheetName = "Reestr";
     private XSSFWorkbook wb;
     private XSSFSheet sheet;
     private IdFileManager idinnerFmReport;
     private Path currentReportFolder;
+    
+    private String NOT_DETECTED = "|_|_|_|_|NotDetectedType|_|_|_|_|";
+    private String AOCP_DETECTED = "|_|_|_|_|AOCP|_|_|_|_|";
+    private String AOCP_PAGE1_DETECTED = "|_|_|_|_|AOCP-P1|_|_|_|_|";
+    private String AOCP_PAGE2_DETECTED = "|_|_|_|_|AOCP-P2|_|_|_|_|";
+    private String ABK_DETECTED = "|_|_|_|_|ABK|_|_|_|_|";
     
     
     private ArrayList<Path> filesForReport;
@@ -76,31 +82,289 @@ public class IdReporter {
             String strFileName = elementFile.toString();
             
             List<String> lines = new ArrayList<>();
-            lines.add("filename" + strFileName);
+            lines.add(strFileName);
+            lines.add("|_|_|_|_|NotDetectedType|_|_|_|_|");
             try {
                 lines.addAll(Files.readAllLines(elementFile, Charset.forName("UTF-8")));
             } catch (IOException ex) {
                 ex.getMessage();
                 ex.printStackTrace();
             }
-            lines.add("filename" + strFileName);
+            lines.add("|_|_|_|_|allLinesNotFilteredInFile|_|_|_|_|");
+            lines.add(strFileName);
             List<String> linesFiltered = new ArrayList<>();
+            //filter and write in this part of code
+            linesFiltered.addAll(rowFilterNotAdaptive(lines));
             
-            linesFiltered.addAll(rowFilter(lines));
             reportWriterXlsx(linesFiltered);
+            //reportWriterXlsx(lines);
             System.out.println(strFileName + " row count " + linesFiltered.size());
             
         }
         saveXlsFile();
+    }
+    private List<String> rowFilterNotAdaptive(List<String> linesOuter){
+        int percentABK = 0;
+        int percentAOCP = 0;
+        int percentAOCP1 = 0;
+        int percentAOCP2 = 0;
+        int linesCount = 0;
+        List<String> strFiltered = new ArrayList<>();
+        for (String strForAdd : linesOuter) {
+            linesCount++;
+            String stringForFilter = new String(strForAdd.toLowerCase().getBytes());
+            if( !stringForFilter.isEmpty() ){
+                strFiltered.add(strForAdd);
+                //AOCP - 1 str
+                
+                if( stringForFilter.contains("приложение №3") ){
+                    percentAOCP++;
+                    percentAOCP1++;
+                }
+                if( stringForFilter.contains("освидетельствования") ){
+                    percentAOCP++;
+                    percentAOCP1++;
+                }
+                if( stringForFilter.contains("скрытых") ){
+                    percentAOCP++;
+                    percentAOCP1++;
+                }
+                //AOCP - 2 str
+                if( stringForFilter.contains("составлен") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("экземплярах") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("сведения") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("дополнительные") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("разрешается") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("предъявлены") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("документы") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("подтверждающие") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("соответствие") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("предъявляемым") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                if( stringForFilter.contains("требованиям") ){
+                    percentAOCP++;
+                    percentAOCP2++;
+                }
+                //ABK
+                if( stringForFilter.contains("результатах") ){
+                    percentABK++;
+                }
+                if( stringForFilter.contains("проверки") ){
+                    percentABK++;
+                }
+                if( stringForFilter.contains("изделий") ){
+                    percentABK++;
+                }
+                
+                
+                
+                
+                //part rules for decline strings
+                /*if( stringForFilter.contains("фамилия") ){
+                    continue;
+                }*/
+                //part rules for accept strings
+                /*if( stringForFilter.contains("акт") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("№") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("дата") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("работ") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("освидетельствования") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("монтаж") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("погружение") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("забивка") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("нанесение") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("грунтовка") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("скрытых") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("проекту") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("паспорт") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("сертификат") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("схема") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("труба") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("результат") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("свая") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("балка") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("траверса") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("отвод") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("переход") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("тройник") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("смесь") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("январ") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("феврал") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("март") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("апрел") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("май") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("июн") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("июл") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("август") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("сентябр") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("октябр") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("ноябр") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("декабр") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("номер") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                
+                if( stringForFilter.contains("протокол") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }
+                if( stringForFilter.contains("filename") ){
+                    strFiltered.add(strForAdd);
+                    continue;
+                }*/
+            
+            }
+        }
+        return strFiltered;
     }
     private List<String> rowFilter(List<String> linesOuter){
         List<String> strFiltered = new ArrayList<>();
         for (String strForAdd : linesOuter) {
             String stringForFilter = new String(strForAdd.toLowerCase().getBytes());
             if( !stringForFilter.isEmpty() ){
+                //part rules for decline strings
                 if( stringForFilter.contains("фамилия") ){
                     continue;
                 }
+                //part rules for accept strings
                 if( stringForFilter.contains("акт") ){
                     strFiltered.add(strForAdd);
                     continue;
@@ -265,11 +529,16 @@ public class IdReporter {
     }
 
     protected void reportWriterXlsx(List<String> linesOuter){
+        String fileName = "";
+        rowCount++;
+        XSSFRow row = sheet.createRow(rowCount);
+        int colCount = 7;
+        
         for (String stringToXlsxCell : linesOuter) {
+            colCount++;
             
-            rowCount++;
-            XSSFRow row = sheet.createRow(rowCount);
-            XSSFCell cell = row.createCell(3);
+            
+            XSSFCell cell = row.createCell(colCount);
             cell.setCellValue(stringToXlsxCell);
             
             if( (rowCount > FILE_ROW_LIMIT) || (rowCount == 0) ){
