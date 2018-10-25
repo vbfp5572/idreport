@@ -15,8 +15,10 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -142,8 +144,8 @@ public class IdXlsGlobReport {
     }
     protected void addRow(List<String> linesOuter){
         ArrayList<String> forFilter = new ArrayList<String>();
-        forFilter.addAll(linesOuter);
-        
+        forFilter.addAll(filterFormBlackListFile(linesOuter));
+        //@todo filter set there
         
         if( !forFilter.isEmpty() ){
             
@@ -151,6 +153,52 @@ public class IdXlsGlobReport {
             addRowAfterFilter(forFilter);
         }
         
+    }
+    private ArrayList<String> filterFormBlackListFile(List<String> filteredLines){
+        ArrayList<String> linesDest = new ArrayList<String>();
+        Path fileBlackListWord = Paths.get("D:/20181024-0511-vsn-reestr/003/word-black-list.txt");
+        if( Files.exists(fileBlackListWord, LinkOption.NOFOLLOW_LINKS) ){
+            System.out.println("Word black list found and exist " + fileBlackListWord.toString());
+        }
+        ArrayList<String> wordsFromBlackList = readCfg(fileBlackListWord.toString());
+        System.out.println("Word count in black list " + wordsFromBlackList.size());
+        int countOutOfFilter = 0;
+        for(String elStr : filteredLines){
+            countOutOfFilter++;
+            if( countOutOfFilter < 2 ){
+                continue;
+            }
+          
+            String strReplaced = new String(elStr.getBytes());
+            //String strReplaced = new String(strWithOutDot.replaceAll("\\s*(\\w|\\s|\t|\\.|:|,|\")\\s*", "").getBytes());
+            
+            for(String strSubRepl : wordsFromBlackList){
+                strReplaced = new String(strReplaced.replaceAll("\\s*" + strSubRepl + "\\s*", "").getBytes());
+            }
+            String strForOutPut = new String(strReplaced.replaceAll("\\s*(\\w|\\s|\t|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)\\s*", "").getBytes());
+            //String str3 = new String(str2.replaceAll("\\s*[работ по строитель]-[для физических типу]\\s*", "").toString());
+            linesDest.add(strForOutPut);
+        }
+        return linesDest;
+    }
+    private static ArrayList<String> readCfg(String ncStrCfgPath){
+        ArrayList<String> strForReturn;
+        strForReturn = new ArrayList<String>();
+        try(BufferedReader br = new BufferedReader(new FileReader(ncStrCfgPath)))
+        {
+            String s;
+            while((s=br.readLine())!=null){
+                
+                    strForReturn.add(s.trim());
+                    //System.out.println(s);
+            }
+        }
+         catch(IOException ex){
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + ncStrCfgPath
+            + " " + ex.getMessage());
+        }   
+        return strForReturn;
     }
     /*protected TreeMap<String, String> getKeysForSubString(){
         TreeMap<String, String> keysForSearch = new TreeMap<String, String>();
@@ -169,7 +217,7 @@ public class IdXlsGlobReport {
         }
         return innerStr;
     }*/
-    protected String replaseFromString(String innerStr){
+    /*protected String replaseFromString(String innerStr){
         
         String lowCaseStr = innerStr.toLowerCase();
         
@@ -194,23 +242,26 @@ public class IdXlsGlobReport {
         
         String outerStr = workStr + prjctStr + matliStr;
         return outerStr;
-    }
+    }*/
     //@todo compare with etalon array and percent of compare
     protected void addRowAfterFilter(List<String> linesOuter){
         String fileName = "";
         rowCount++;
         XSSFRow row = sheet.createRow(rowCount);
         int colForWrite = colCount;
-        
+        String summaryStr = "";
         for (String stringToXlsxCell : linesOuter) {
             colForWrite++;
-            
-            
-            
             XSSFCell cell = row.createCell(colForWrite);
             cell.setCellValue(stringToXlsxCell);
-            
-            if( (rowCount > FILE_ROW_LIMIT) || (rowCount == 0) ){
+            summaryStr = summaryStr + stringToXlsxCell;
+        }
+        XSSFCell cell = row.createCell(3);
+        cell.setCellValue(summaryStr);
+        saveOldAndCreateNewXlsBook();
+    }
+    protected void saveOldAndCreateNewXlsBook(){
+        if( (rowCount > FILE_ROW_LIMIT) || (rowCount == 0) ){
                 if ( rowCount != 0){
                     saveXlsFile();
                     try {
@@ -241,7 +292,6 @@ public class IdXlsGlobReport {
                 excelFile = getIterationXlsFileName();
                 
             }
-        }
     }
     protected void saveXlsFile(){
         

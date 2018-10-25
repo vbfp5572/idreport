@@ -145,7 +145,10 @@ public class IdReporter {
             if( countFiles == iterationCount ){
                 lastFileFlag = Boolean.TRUE;
             }
-            dictonariesManager.putSplitLineAndPutToDictonaries(lines, lastFileFlag);
+            //for create dictonaries uncomment this string
+            //dictonariesManager.putSplitLineAndPutToDictonaries(lines, lastFileFlag);
+            
+            
             //filter and write in this part of code
             linesFiltered.addAll(rowFilterNotAdaptive(lines));
             
