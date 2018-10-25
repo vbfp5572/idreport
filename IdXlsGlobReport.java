@@ -190,7 +190,7 @@ public class IdXlsGlobReport {
             String s;
             while((s=br.readLine())!=null){
                 
-                    strForReturn.add(s.trim());
+                    strForReturn.add(s);
                     //System.out.println(s);
             }
         }
