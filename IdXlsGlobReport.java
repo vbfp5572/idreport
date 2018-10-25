@@ -176,7 +176,7 @@ public class IdXlsGlobReport {
             for(String strSubRepl : wordsFromBlackList){
                 strReplaced = new String(strReplaced.replaceAll("\\s*" + strSubRepl + "\\s*", "").getBytes());
             }
-            String strForOutPut = new String(strReplaced.replaceAll("\\s*(\\w\\s|\t|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)\\s*", "").getBytes());
+            String strForOutPut = new String(strReplaced.replaceAll("\\s*(\\s|_|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)\\s*", "").getBytes());
             //String str3 = new String(str2.replaceAll("\\s*[работ по строитель]-[для физических типу]\\s*", "").toString());
             linesDest.add(strForOutPut);
         }
@@ -251,11 +251,15 @@ public class IdXlsGlobReport {
         XSSFRow row = sheet.createRow(rowCount);
         int colForWrite = colCount;
         String summaryStr = "";
+        int countNotSumColumn = 0;
         for (String stringToXlsxCell : linesOuter) {
+            countNotSumColumn++;
             colForWrite++;
             XSSFCell cell = row.createCell(colForWrite);
             cell.setCellValue(stringToXlsxCell);
-            summaryStr = summaryStr + stringToXlsxCell;
+            if( countNotSumColumn > 2 ){
+                summaryStr = summaryStr + " " + stringToXlsxCell;
+            }
         }
         XSSFCell cell = row.createCell(3);
         cell.setCellValue(summaryStr);
