@@ -15,6 +15,7 @@
  */
 package ru.vbfp.idreport;
 
+import com.sun.prism.paint.Color;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,10 +29,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 
 /**
  *
@@ -42,6 +48,7 @@ public class IdXlsGlobReport {
     private Path fileXlsToWrite;
     private Path excelFile;
     private static final int FILE_ROW_LIMIT = 1000;
+    private Integer allRowIndex;
     private String sheetName = "Reestr";
     private XSSFWorkbook wb;
     private XSSFSheet sheet;
@@ -69,6 +76,7 @@ public class IdXlsGlobReport {
         sheet = wb.createSheet(sheetName);
         rowCount = 5;
         colCount = 7;
+        allRowIndex = 0;
     }
     protected Path getIterationXlsFileName(){
         return Paths.get(idFmInnerReport.getCurrentReportDir().toString(),
@@ -100,7 +108,7 @@ public class IdXlsGlobReport {
         
         return forFilter;
     }*/
-    protected String getWordInLine(String forDeleteWords){
+    /*protected String getWordInLine(String forDeleteWords){
         String[] deletedWords = {"атомному",
             "ведения",
             "документации",
@@ -141,7 +149,7 @@ public class IdXlsGlobReport {
             }
         }
         return forReturnStr;
-    }
+    }*/
     protected void addRow(List<String> linesOuter){
         ArrayList<String> forFilter = new ArrayList<String>();
         forFilter.addAll(filterFormBlackListFile(linesOuter));
@@ -156,7 +164,7 @@ public class IdXlsGlobReport {
     }
     private ArrayList<String> filterFormBlackListFile(List<String> filteredLines){
         ArrayList<String> linesDest = new ArrayList<String>();
-        Path fileBlackListWord = Paths.get("D:/20181024-0511-vsn-reestr/003/word-black-list.txt");
+        Path fileBlackListWord = Paths.get("D:/20181024-0511-vsn-reestr/005/word-black-list.txt");
         if( Files.exists(fileBlackListWord, LinkOption.NOFOLLOW_LINKS) ){
             System.out.println("Word black list found and exist " + fileBlackListWord.toString());
         }
@@ -174,11 +182,13 @@ public class IdXlsGlobReport {
             //String strReplaced = new String(strWithOutDot.replaceAll("\\s*(\\w|\\s|\t|\\.|:|,|\")\\s*", "").getBytes());
             
             for(String strSubRepl : wordsFromBlackList){
-                strReplaced = new String(strReplaced.replaceAll("\\s*" + strSubRepl + "\\s*", "").getBytes());
+                strReplaced = new String(strReplaced.replaceAll(strSubRepl, "").getBytes());
             }
-            String strForOutPut = new String(strReplaced.replaceAll("\\s*(\\s|_|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)\\s*", "").getBytes());
+            //String strForOutPut = new String(strReplaced.replaceAll("(_|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)", "").getBytes());
+            //String strForOutPut = new String(strReplaced.replaceAll("\\s*(_|\\.|:|,|!|\"|\\||$|~|@|#|\\*|%|\\^|&|\\(|\\)|\\{|\\}|\\[|\\]|<|>|\\?)\\s*", "").getBytes());
             //String str3 = new String(str2.replaceAll("\\s*[работ по строитель]-[для физических типу]\\s*", "").toString());
-            linesDest.add(strForOutPut);
+            //linesDest.add(strForOutPut);
+            linesDest.add(strReplaced);
         }
         return linesDest;
     }
@@ -189,9 +199,7 @@ public class IdXlsGlobReport {
         {
             String s;
             while((s=br.readLine())!=null){
-                
                     strForReturn.add(s);
-                    //System.out.println(s);
             }
         }
          catch(IOException ex){
@@ -246,6 +254,7 @@ public class IdXlsGlobReport {
     }*/
     //@todo compare with etalon array and percent of compare
     protected void addRowAfterFilter(List<String> linesOuter){
+        allRowIndex++;
         String fileName = "";
         rowCount++;
         XSSFRow row = sheet.createRow(rowCount);
@@ -261,9 +270,63 @@ public class IdXlsGlobReport {
                 summaryStr = summaryStr + " " + stringToXlsxCell;
             }
         }
-        XSSFCell cell = row.createCell(3);
-        cell.setCellValue(summaryStr);
+        XSSFCell cellNumA = row.createCell(0);
+        cellNumA.setCellValue(allRowIndex);
+        cellNumA.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumB = row.createCell(1);
+        cellNumB.setCellValue(summaryStr);
+        cellNumB.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumC = row.createCell(2);
+        cellNumC.setCellValue("");
+        cellNumC.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumD = row.createCell(3);
+        cellNumD.setCellFormula("=D" + rowCount.toString());
+        cellNumD.setCellStyle(getSampleStyle(wb));
+        
+        Integer beforeThisRow = rowCount - 1;
+        
+        XSSFCell cellNumE = row.createCell(4);
+        cellNumE.setCellFormula("=E" + beforeThisRow.toString());
+        cellNumE.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumF = row.createCell(5);
+        cellNumF.setCellFormula("=F" + beforeThisRow.toString());
+        cellNumF.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumG = row.createCell(6);
+        cellNumG.setCellValue("-");
+        cellNumG.setCellStyle(getSampleStyle(wb));
+        
+        XSSFCell cellNumH = row.createCell(7);
+        cellNumH.setCellFormula("=E" + rowCount + "+F" + rowCount + "-1");
+        cellNumH.setCellStyle(getSampleStyle(wb));
+        
         saveOldAndCreateNewXlsBook();
+    }
+    private static XSSFCellStyle getSampleStyle(XSSFWorkbook workbook) {
+        // Font
+        XSSFFont font = workbook.createFont();
+        font.setBold(false);
+        font.setItalic(false);
+ 
+        // Font Height
+        font.setFontHeightInPoints((short) 12);
+ 
+        // Font Color
+        font.setColor(IndexedColors.BLACK.index);
+        XSSFColor borderColor = new XSSFColor();
+        borderColor.setIndexed(IndexedColors.BLACK.index);
+        // Style
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setFont(font);
+        style.setBorderColor(XSSFCellBorder.BorderSide.TOP,borderColor);
+        style.setBorderColor(XSSFCellBorder.BorderSide.BOTTOM,borderColor);
+        style.setBorderColor(XSSFCellBorder.BorderSide.LEFT,borderColor);
+        style.setBorderColor(XSSFCellBorder.BorderSide.RIGHT,borderColor);
+        return style;
     }
     protected void saveOldAndCreateNewXlsBook(){
         if( (rowCount > FILE_ROW_LIMIT) || (rowCount == 0) ){

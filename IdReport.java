@@ -29,6 +29,64 @@ public class IdReport {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        runProcessForCreateXlsReestr();
+        //runProcessForCreateXlsReestrOnlyTwoStorages();
+        
+    }
+    private static void oldCodeFor(){
+    /*ArrayList<Path> dirReportXls = new ArrayList<Path> ();
+        dirReportXls.addAll(idFmReport.getXlsxFilesFromReportDir());
+        System.out.println("Files *.xlsx count: " + dirReportXls.size());
+        IdXlsxReportFilesSummator reportSummator = new IdXlsxReportFilesSummator(dirReportXls);
+        reportSummator.processReportSum();*/
+    }
+    
+    
+    private static void runProcessForCreateXlsReestrOnlyTwoStorages(){
+        // TODO code application logic here
+        IdFileManager idFmReport = new IdFileManager();
+        //idFmReport.printStoragesList();
+        
+        Integer sizeStoragesList = idFmReport.getSizeStoragesList();
+        
+        
+        IdXlsGlobReport xlsSummaryReport = new IdXlsGlobReport(idFmReport);
+        for (int i = 0; i < 2; i++) {
+        //for (int i = 0; i < sizeStoragesList; i++) {
+            System.out.println("Current storage:");
+            System.out.println(idFmReport.getCurrentStorage().toString());
+            
+            ArrayList<String> processStLines = new ArrayList<String>();
+            processStLines.addAll(idFmReport.getProcessStContent());
+            String readedSrcString = processStLines.get(0);
+            
+            ArrayList<Path> forTextFiles = new ArrayList<Path>();
+            forTextFiles.addAll(idFmReport.getTextFilesFromCurrentStorage());
+
+
+            ArrayList<Path> forImagesFiles = new ArrayList<Path>();
+            forImagesFiles.addAll(idFmReport.getImagesFilesFromCurrentStorage());
+            if( forImagesFiles.size() == forTextFiles.size() ){
+                System.out.println("Files count in text and images storage: " + forTextFiles.size());
+            }
+            else{
+                System.out.println("Files count in text: " + forTextFiles.size()
+                        + ", images: " + forImagesFiles.size()
+                        + ", count of files is wrong, choise next storage");
+                idFmReport.setNextCurrentStorage();
+                //@todo in iterations use here continue;
+            }
+            IdTextFileFilter filesFilter = new IdTextFileFilter(forImagesFiles,forTextFiles,idFmReport);
+            IdReporter reporterToXls = new IdReporter(forTextFiles,idFmReport,xlsSummaryReport);
+            reporterToXls.setSrcFileName(readedSrcString);
+            reporterToXls.processFileFromList();
+            forImagesFiles.clear();
+            forTextFiles.clear();
+            idFmReport.setNextCurrentStorage();
+        }
+        xlsSummaryReport.saveXlsFile();
+    }
+    private static void runProcessForCreateXlsReestr(){
         // TODO code application logic here
         IdFileManager idFmReport = new IdFileManager();
         //idFmReport.printStoragesList();
@@ -71,11 +129,6 @@ public class IdReport {
             idFmReport.setNextCurrentStorage();
         }
         xlsSummaryReport.saveXlsFile();
-        /*ArrayList<Path> dirReportXls = new ArrayList<Path> ();
-        dirReportXls.addAll(idFmReport.getXlsxFilesFromReportDir());
-        System.out.println("Files *.xlsx count: " + dirReportXls.size());
-        IdXlsxReportFilesSummator reportSummator = new IdXlsxReportFilesSummator(dirReportXls);
-        reportSummator.processReportSum();*/
     }
     
 }
