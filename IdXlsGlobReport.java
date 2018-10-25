@@ -283,25 +283,25 @@ public class IdXlsGlobReport {
         cellNumC.setCellStyle(getSampleStyle(wb));
         
         XSSFCell cellNumD = row.createCell(3);
-        cellNumD.setCellFormula("=D" + rowCount.toString());
+        cellNumD.setCellFormula("D" + rowCount.toString());
         cellNumD.setCellStyle(getSampleStyle(wb));
         
         Integer beforeThisRow = rowCount - 1;
         
         XSSFCell cellNumE = row.createCell(4);
-        cellNumE.setCellFormula("=E" + beforeThisRow.toString());
+        cellNumE.setCellFormula("E" + beforeThisRow.toString());
         cellNumE.setCellStyle(getSampleStyle(wb));
         
         XSSFCell cellNumF = row.createCell(5);
-        cellNumF.setCellFormula("=F" + beforeThisRow.toString());
+        cellNumF.setCellFormula("F" + beforeThisRow.toString());
         cellNumF.setCellStyle(getSampleStyle(wb));
         
         XSSFCell cellNumG = row.createCell(6);
-        cellNumG.setCellValue("-");
+        cellNumG.setCellValue("'-");
         cellNumG.setCellStyle(getSampleStyle(wb));
         
         XSSFCell cellNumH = row.createCell(7);
-        cellNumH.setCellFormula("=E" + rowCount + "+F" + rowCount + "-1");
+        cellNumH.setCellFormula("E" + rowCount + "+F" + rowCount + "-1");
         cellNumH.setCellStyle(getSampleStyle(wb));
         
         saveOldAndCreateNewXlsBook();
