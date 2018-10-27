@@ -144,7 +144,6 @@ public class IdFileManager {
      * @return 
      */
     protected Path getInDirDictonariesHtmlFile(String processIdForNow){
-        getDirDictonariesHtmlSubImgTextReport();
         try{
             pathIsNotDirectory(currentReportHtmlFolder);
             pathIsNotReadWriteLink(currentReportHtmlFolder);

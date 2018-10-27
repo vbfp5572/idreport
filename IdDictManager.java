@@ -50,7 +50,7 @@ public class IdDictManager {
         //idInnerFmReport.
         
         String newProcessId = idInnerFmReport.getNewProcessId();
-        
+        Path dirDictonariesHtmlSubImgTextReport = idInnerFmReport.getDirDictonariesHtmlSubImgTextReport();
         //for (int i = 0; i < 2; i++) {
         for (int i = 0; i < sizeStoragesList; i++) {
             System.out.println("Dictonaries Manager Current storage:");
