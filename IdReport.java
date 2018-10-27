@@ -29,9 +29,15 @@ public class IdReport {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        runProcessForCreateXlsReestr();
+        runDictonariesBuilder();
+        //runProcessForCreateXlsReestr();
         //runProcessForCreateXlsReestrOnlyTwoStorages();
         
+    }
+    private static void runDictonariesBuilder(){
+        IdFileManager idFmReport = new IdFileManager();
+        IdDictManager idDictManager = new IdDictManager(idFmReport);
+        idDictManager.buildHtmlImagesTextFromOCRFolders();
     }
     private static void oldCodeFor(){
     /*ArrayList<Path> dirReportXls = new ArrayList<Path> ();
@@ -48,7 +54,6 @@ public class IdReport {
         //idFmReport.printStoragesList();
         
         Integer sizeStoragesList = idFmReport.getSizeStoragesList();
-        
         
         IdXlsGlobReport xlsSummaryReport = new IdXlsGlobReport(idFmReport);
         for (int i = 0; i < 2; i++) {

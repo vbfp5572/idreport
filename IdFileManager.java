@@ -15,6 +15,8 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryIteratorException;
@@ -43,6 +45,7 @@ public class IdFileManager {
     private static final String PATH_ROOT = "D:/";
     private static final String REPORT_POSFIX = "-id-sum-rep";
     private static final String HTML = "html";
+    private static final String HTML_IMAGES_OCR_TEXT_REPORT = "html-ocr-img-txt-report";
     private static final String XLS_REPORTS = "xlsx";
     private static final String DIR_DICTONARIES = "dict";
     private static final String DIR_DICTONARIES_UNFILTERED = "dict-unf";
@@ -52,6 +55,7 @@ public class IdFileManager {
     private static final String FIELD_SEPARATOR = "|_|_|_|_|";
     private static final String IS_COMPILED_REPORT = "-compiled.st";
     private static final String XLSX_REPORT_NAME = "-id-reestr.xlsx";
+    private static final String HTML_FILES_REPORT_NAME = "-id-sum-file-report.html";
     
     private Path currentReportFolder;
     
@@ -101,7 +105,56 @@ public class IdFileManager {
         readLinesFromFile.addAll(readLinesFromFile(processSt));
         return readLinesFromFile;
     }
-    
+    protected Path getDirDictonariesHtml(){
+        return checkOrCreateSubWorkDir(HTML);
+    }
+    protected Path getDirDictonariesHtmlImgTextReport(){
+        return checkOrCreateSubWorkDir(HTML_IMAGES_OCR_TEXT_REPORT);
+    }
+    protected static void writeLinesToFile(String strCfgPath, ArrayList<String> strTextRemark){
+        
+        
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(strCfgPath)))
+        {
+            for(String itemStr : strTextRemark){
+                String text = itemStr.toString();
+                
+                bw.write(text);
+                bw.newLine();
+            }
+        }
+        catch(IOException ex){
+             ex.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + strCfgPath
+            + " " + ex.getMessage());
+        }
+    }
+    /**
+     * //@todo make function for create sub folder for report folder for build this part of report
+     * @return 
+     */
+    protected Path getInDirDictonariesHtmlFile(){
+        Path dirDictonariesHtml = getDirDictonariesHtmlImgTextReport();
+        String newProcessId = getNewProcessId();
+        Path currentHtmlReportFile = Paths.get(dirDictonariesHtml.toString(), newProcessId + HTML_FILES_REPORT_NAME);
+        currentHtmlReportFile = createFile(currentHtmlReportFile);
+        return currentHtmlReportFile;
+    }
+    protected Path createFile(Path creationFilePath){
+        try{
+            if( Files.notExists(creationFilePath) ){
+                Files.createFile(creationFilePath);
+            }
+            pathIsNotFile(creationFilePath);
+            pathIsNotReadWriteLink(creationFilePath);
+            System.out.println("[CREATE_NEW_FILE] file path " + creationFilePath.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Can`t create new file " + creationFilePath.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return creationFilePath;
+    }
     protected Path getDirDictonariesWord(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES_WORD);
     }
