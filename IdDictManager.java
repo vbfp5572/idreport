@@ -115,8 +115,8 @@ public class IdDictManager {
                 + readedSrcStringOuter 
                 + "</td></tr>";
         linesToReportFile.add(forBuildHead);
-        String imgPrefix = "img_el";
-        String textPreFix = "txt_ocr_el";
+        String imgPrefix = newProcessId + "img_el";
+        String textPreFix = newProcessId + "txt_ocr_el";
         if( forImagesFilesOuter.size() == forTextFilesOuter.size() ){
             int idxFile = 0;
             for (Path imagesFile : forImagesFilesOuter) {
