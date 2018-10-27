@@ -48,6 +48,9 @@ public class IdDictManager {
     protected void storageWalker(){
         Integer sizeStoragesList = idInnerFmReport.getSizeStoragesList();
         //idInnerFmReport.
+        
+        String newProcessId = idInnerFmReport.getNewProcessId();
+        
         //for (int i = 0; i < 2; i++) {
         for (int i = 0; i < sizeStoragesList; i++) {
             System.out.println("Dictonaries Manager Current storage:");
@@ -63,18 +66,20 @@ public class IdDictManager {
 
             ArrayList<Path> forImagesFiles = new ArrayList<Path>();
             forImagesFiles.addAll(idInnerFmReport.getImagesFilesFromCurrentStorage());
-            buildSumFileReport(currentStorageString,
+            buildSumFileReport(newProcessId,
+                    currentStorageString,
                     readedSrcString,
                     forTextFiles,
                     forImagesFiles);
             idInnerFmReport.setNextCurrentStorage();
         }
     }
-    protected void buildSumFileReport(String currentStorageStringOuter,
+    protected void buildSumFileReport(String newProcessId,
+            String currentStorageStringOuter,
             String readedSrcStringOuter,
             ArrayList<Path> forTextFilesOuter, 
             ArrayList<Path> forImagesFilesOuter){
-        String newProcessId = idInnerFmReport.getNewProcessId();
+        
         Path inDirDictonariesHtmlFile = idInnerFmReport.getInDirDictonariesHtmlFile(newProcessId);
         Path inDirDictonariesHtmlJsFile = idInnerFmReport.getInDirDictonariesHtmlJsDirFile(newProcessId);
         Path inDirDictonariesHtmlCssFile = idInnerFmReport.getInDirDictonariesHtmlCssDirFile(newProcessId);
