@@ -66,7 +66,7 @@ public class IdDictManager {
 
             ArrayList<Path> forImagesFiles = new ArrayList<Path>();
             forImagesFiles.addAll(idInnerFmReport.getImagesFilesFromCurrentStorage());
-            buildSumFileReport(newProcessId,
+            buildSumFileReport(newProcessId + "-s-id-" + i,
                     currentStorageString,
                     readedSrcString,
                     forTextFiles,
