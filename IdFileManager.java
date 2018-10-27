@@ -56,8 +56,13 @@ public class IdFileManager {
     private static final String IS_COMPILED_REPORT = "-compiled.st";
     private static final String XLSX_REPORT_NAME = "-id-reestr.xlsx";
     private static final String HTML_FILES_REPORT_NAME = "-id-sum-file-report.html";
+    private static final String HTML_FILES_REPORT_JS = "js";
+    private static final String HTML_FILES_REPORT_CSS = "css";
+    private static final String CSS_EXT = ".css";
+    private static final String JS_EXT = ".js";
     
     private Path currentReportFolder;
+    private Path currentReportHtmlFolder;
     
     private static final String PDF_DIR = "pdf";
     private static final String PDF_RENAMED_DIR = "pdf-renamed";
@@ -111,6 +116,11 @@ public class IdFileManager {
     protected Path getDirDictonariesHtmlImgTextReport(){
         return checkOrCreateSubWorkDir(HTML_IMAGES_OCR_TEXT_REPORT);
     }
+    protected Path getDirDictonariesHtmlSubImgTextReport(){
+        String newProcessId = getNewProcessId();
+        currentReportHtmlFolder = checkOrCreateSubHtmlReportDir(newProcessId);
+        return currentReportHtmlFolder;
+    }
     protected static void writeLinesToFile(String strCfgPath, ArrayList<String> strTextRemark){
         
         
@@ -133,12 +143,68 @@ public class IdFileManager {
      * //@todo make function for create sub folder for report folder for build this part of report
      * @return 
      */
-    protected Path getInDirDictonariesHtmlFile(){
-        Path dirDictonariesHtml = getDirDictonariesHtmlImgTextReport();
-        String newProcessId = getNewProcessId();
-        Path currentHtmlReportFile = Paths.get(dirDictonariesHtml.toString(), newProcessId + HTML_FILES_REPORT_NAME);
+    protected Path getInDirDictonariesHtmlFile(String processIdForNow){
+        getDirDictonariesHtmlSubImgTextReport();
+        try{
+            pathIsNotDirectory(currentReportHtmlFolder);
+            pathIsNotReadWriteLink(currentReportHtmlFolder);
+            System.out.println("[DIR_EXIST] html report directory path " + currentReportHtmlFolder.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Can`t create new file, directory not exist or not have permissions " + currentReportHtmlFolder.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        Path dirDictonariesHtml = currentReportHtmlFolder;
+        
+        Path currentHtmlReportFile = Paths.get(dirDictonariesHtml.toString(), processIdForNow + HTML_FILES_REPORT_NAME);
         currentHtmlReportFile = createFile(currentHtmlReportFile);
         return currentHtmlReportFile;
+    }
+    protected Path getInDirDictonariesHtmlJsDirFile(String processIdForNow){
+        Path cssFile = Paths.get(PATH_ROOT,  processIdForNow + "not-true-create.js");;
+        try{
+            Path subDirPath = Paths.get(currentReportHtmlFolder.toString());
+            pathIsNotDirectory(subDirPath);
+            pathIsNotReadWriteLink(subDirPath);
+            subDirPath = Paths.get(subDirPath.toString(), HTML_FILES_REPORT_JS);
+            if( Files.notExists(subDirPath) ){
+                Files.createDirectory(subDirPath);
+            }
+            pathIsNotDirectory(subDirPath);
+            pathIsNotReadWriteLink(subDirPath);
+            cssFile = Paths.get(subDirPath.toString(), processIdForNow + JS_EXT);
+            
+            System.out.println("[DIR_EXIST] html report css file path " + currentReportHtmlFolder.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Can`t create new file, directory not exist or not have permissions " + currentReportHtmlFolder.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        return createFile(cssFile);
+    }
+    protected Path getInDirDictonariesHtmlCssDirFile(String processIdForNow){
+        Path cssFile = Paths.get(PATH_ROOT, processIdForNow + "not-true-create.css");;
+        try{
+            Path subDirPath = Paths.get(currentReportHtmlFolder.toString());
+            pathIsNotDirectory(subDirPath);
+            pathIsNotReadWriteLink(subDirPath);
+            subDirPath = Paths.get(subDirPath.toString(), HTML_FILES_REPORT_CSS);
+            if( Files.notExists(subDirPath) ){
+                Files.createDirectory(subDirPath);
+            }
+            pathIsNotDirectory(subDirPath);
+            pathIsNotReadWriteLink(subDirPath);
+            cssFile = Paths.get(subDirPath.toString(), processIdForNow + CSS_EXT);
+            
+            System.out.println("[DIR_EXIST] html report css file path " + currentReportHtmlFolder.toString());
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Can`t create new file, directory not exist or not have permissions " + currentReportHtmlFolder.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        return createFile(cssFile);
     }
     protected Path createFile(Path creationFilePath){
         try{
@@ -431,6 +497,29 @@ public class IdFileManager {
       
        //formatted value of current Date
        return df.format(currentDate);
+    }
+    private Path checkOrCreateSubHtmlReportDir(String subDirName){
+        Path subDirForHtmlReport = getDirDictonariesHtmlImgTextReport();
+        Path forCheckOrCreateDir = Paths.get(subDirForHtmlReport.toString(),subDirName);
+        if( Files.exists(forCheckOrCreateDir, LinkOption.NOFOLLOW_LINKS) ){
+            try {
+                pathIsNotReadWriteLink(forCheckOrCreateDir);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + forCheckOrCreateDir.toString());
+            }
+            if( Files.isDirectory(forCheckOrCreateDir, LinkOption.NOFOLLOW_LINKS) ){
+                return forCheckOrCreateDir;
+            }
+        }
+        try {
+            Files.createDirectory(forCheckOrCreateDir);
+            pathIsNotReadWriteLink(forCheckOrCreateDir);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t createDirectory " + forCheckOrCreateDir.toString());
+        }
+        return forCheckOrCreateDir;
     }
     private Path checkOrCreateSubWorkDir(String subDirName){
          Path forCheckOrCreateDir = Paths.get(currentReportFolder.toString(),subDirName);

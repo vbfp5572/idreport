@@ -74,8 +74,13 @@ public class IdDictManager {
             String readedSrcStringOuter,
             ArrayList<Path> forTextFilesOuter, 
             ArrayList<Path> forImagesFilesOuter){
-        Path inDirDictonariesHtmlFile = idInnerFmReport.getInDirDictonariesHtmlFile();
+        String newProcessId = idInnerFmReport.getNewProcessId();
+        Path inDirDictonariesHtmlFile = idInnerFmReport.getInDirDictonariesHtmlFile(newProcessId);
+        Path inDirDictonariesHtmlJsFile = idInnerFmReport.getInDirDictonariesHtmlJsDirFile(newProcessId);
+        Path inDirDictonariesHtmlCssFile = idInnerFmReport.getInDirDictonariesHtmlCssDirFile(newProcessId);
         ArrayList<String> linesToReportFile = new ArrayList<String>();
+        ArrayList<String> linesToCssFile = new ArrayList<String>();
+        ArrayList<String> linesToJsFile = new ArrayList<String>();
         
         String forBuildHead = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">";
         linesToReportFile.add(forBuildHead);
@@ -84,6 +89,12 @@ public class IdDictManager {
         forBuildHead = "<head>";
         linesToReportFile.add(forBuildHead);
         forBuildHead = "<title>HTML report OCR files</title>";
+        linesToReportFile.add(forBuildHead);
+        forBuildHead = "<script type=\"text/javascript\" src=\"../../../forconvert/js-lib/jquery-3.3.1.js\"></script>";
+        linesToReportFile.add(forBuildHead);
+        forBuildHead = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + inDirDictonariesHtmlCssFile.toString() + "\">";
+        linesToReportFile.add(forBuildHead);
+        forBuildHead = "<script type=\"text/javascript\" src=\"" + inDirDictonariesHtmlJsFile.toString() + "\"></script>";
         linesToReportFile.add(forBuildHead);
         forBuildHead = "</head>";
         linesToReportFile.add(forBuildHead);
@@ -99,18 +110,31 @@ public class IdDictManager {
                 + readedSrcStringOuter 
                 + "</td></tr>";
         linesToReportFile.add(forBuildHead);
-        
+        String imgPrefix = "img_el";
+        String textPreFix = "txt_ocr_el";
         if( forImagesFilesOuter.size() == forTextFilesOuter.size() ){
             int idxFile = 0;
-            for (Path pathFile : forImagesFilesOuter) {
+            for (Path imagesFile : forImagesFilesOuter) {
+                String toStringImagesFile = imagesFile.toString();
+                Path fileNameImagesFile = imagesFile.getFileName();
+                String toStringTextFiles = forTextFilesOuter.get(idxFile).toString();
+                Path fileNameTextFiles = forTextFilesOuter.get(idxFile).getFileName();
                 String forBuild = "";
-                forBuild = "<tr><td>" 
-                + "<img src=\"" + pathFile.toString() + "\" height=\"300\" style=\"padding:0px 2px;border:1px solid black\">" 
-                + "</td><td>" 
-                + "<iframe src=\"" + forTextFilesOuter.get(idxFile).toString() + "\" width=\"100%\" height=\"300\">" + forTextFilesOuter.get(idxFile).toString() + "</iframe>" 
-                + "</td></tr>";
+                forBuild = "<tr><td>"
+                        + "<input type=\"button\" id=\"but" + imgPrefix + idxFile + "\" value=\"" + fileNameImagesFile.toString() + "\" onclick=\"hideShowDiv" + imgPrefix + idxFile + "();\">"
+                        + "</td>"
+                        + "<td><div id=\"id-src-" + imgPrefix + "_num" + idxFile + "\">" 
+                        + "<img src=\"" + toStringImagesFile + "\" width=\"70%\" height=\"70%\" style=\"padding:0px 2px;border:1px solid black\">" 
+                        + "</div></td><td>" 
+                        + "<div id=\"id-src-" + textPreFix + "_num" + idxFile + "\"><iframe src=\"" + toStringTextFiles + "\" width=\"100%\" height=\"100%\">" + forTextFilesOuter.get(idxFile).toString() + "</iframe>" 
+                        + "</div></td><td>"
+                        + "<input type=\"button\" id=\"but" + textPreFix + idxFile + "\" value=\"" + fileNameTextFiles.toString() + "\" onclick=\"hideShowDiv" + textPreFix + idxFile + "();\">"
+                        + "</td></tr>";
                 
                 linesToReportFile.add(forBuild);
+                linesToCssFile.add(getCssStructText(imgPrefix,idxFile));
+                linesToJsFile.add(getJsText(imgPrefix,idxFile));
+                linesToJsFile.add(getJsText(textPreFix,idxFile));
                 idxFile++;
             }
         }
@@ -122,8 +146,26 @@ public class IdDictManager {
         linesToReportFile.add(forBuildHead);
         
         IdFileManager.writeLinesToFile(inDirDictonariesHtmlFile.toString(), linesToReportFile);
+        IdFileManager.writeLinesToFile(inDirDictonariesHtmlJsFile.toString(), linesToJsFile);
+        IdFileManager.writeLinesToFile(inDirDictonariesHtmlCssFile.toString(), linesToCssFile);
         //idInnerFmReport.
         
+    }
+    private String getCssStructText(String preFix, Integer idDivContainer){
+        //In generation function append before this string #div_id
+        return "#id-src-" + preFix + "_num" + idDivContainer + "{\n" +
+            "    width:70%;\n" +
+            "    height:70%;\n" +
+            "    background:#666699;\n" +
+            "    border:1px solid #333366;\n" +
+            "    margin-bottom:20px;\n" +
+            "    display:none;\n" +
+            "}";
+    }
+    private String getJsText(String preFix, Integer idDivContainer){
+        return "function hideShowDiv" + preFix + idDivContainer + "(){\n" +
+            "      $(\"#id-src-" + preFix + "_num" + idDivContainer + "\").toggle(\"slow\");\n" +
+            "}";
     }
     
     protected void buildDictonariesByRunnable(){
