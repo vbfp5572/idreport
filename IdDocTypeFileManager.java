@@ -15,10 +15,72 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+
 /**
  *
  * @author СДО
  */
 public class IdDocTypeFileManager {
     
+    private IdDocTypeFileDirCreator docTypeCreatorInner;
+    private IdFileManager idFmReportInner;
+    private IdDictFileManager dictonariesFM;
+
+    public IdDocTypeFileManager(IdDocTypeFileDirCreator docTypeCreatorOuter, 
+            IdFileManager idFmReportOuter) {
+        docTypeCreatorInner = docTypeCreatorOuter;
+        idFmReportInner = idFmReportOuter;
+        dictonariesFM = new IdDictFileManager(idFmReportOuter);
+    }
+    protected void processDetectFileTypes(ArrayList<Path> listTextFiles){
+        ArrayList<String> lines = new ArrayList<String>();
+        for(Path fileEnemy : listTextFiles){
+            if( Files.notExists(fileEnemy) ){
+                continue;
+            }
+            try {
+                lines.addAll(Files.readAllLines(fileEnemy, Charset.forName("UTF-8")));
+            } catch (IOException ex) {
+                ex.getMessage();
+                ex.printStackTrace();
+                System.out.println("[ERROR] Can`t read lines from file " + fileEnemy.toAbsolutePath().toString());
+            }
+            detectFileType(lines);
+        }
+        
+    }
+    private void detectFileType(ArrayList<String> outerLinesFromSrcFile){
+        ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
+        dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
+        for(Path fileEnemy : dictonariesBlank){
+            ArrayList<String> linesFromBlank = new ArrayList<String>();
+            linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
+            detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
+        }
+    }
+    private void detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
+            ArrayList<String> linesFromBlank){
+        for(String fileEnemy : outerLinesFromSrcFile){
+        
+        }
+    }
+    private ArrayList<String> getBlankWordFromFile(Path fileEnemy){
+        ArrayList<String> lines = new ArrayList<String>();
+        if( Files.notExists(fileEnemy) ){
+                return lines;
+        }
+        try {
+            lines.addAll(Files.readAllLines(fileEnemy, Charset.forName("UTF-8")));
+        } catch (IOException ex) {
+            ex.getMessage();
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t read lines from file " + fileEnemy.toAbsolutePath().toString());
+        }
+        return lines;
+    }
 }

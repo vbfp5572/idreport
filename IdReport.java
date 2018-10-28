@@ -29,16 +29,56 @@ public class IdReport {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Path subCurrentFolder = IdFileDirCreator.DIR_DOC_TYPE_ABK.getSubCurrentFolder();
+        
         //runDictonariesBuilder();
         //runProcessForCreateXlsReestr();
         //runProcessForCreateXlsReestrOnlyTwoStorages();
         
     }
+    private static void runTextFileSorter(){
+        IdDocTypeFileDirCreator creatorDirFilesForDocTypes = new IdDocTypeFileDirCreator();
+        IdFileManager idFmReport = new IdFileManager();
+        
+        
+        Integer sizeStoragesList = idFmReport.getSizeStoragesList();
+        
+        
+        for (int i = 0; i < 2; i++) {
+        //for (int i = 0; i < sizeStoragesList; i++) {
+            System.out.println("Current storage:");
+            System.out.println(idFmReport.getCurrentStorage().toString());
+            
+            ArrayList<String> processStLines = new ArrayList<String>();
+            processStLines.addAll(idFmReport.getProcessStContent());
+            String readedSrcString = processStLines.get(0);
+            
+            ArrayList<Path> forTextFiles = new ArrayList<Path>();
+            forTextFiles.addAll(idFmReport.getTextFilesFromCurrentStorage());
+
+            ArrayList<Path> forImagesFiles = new ArrayList<Path>();
+            forImagesFiles.addAll(idFmReport.getImagesFilesFromCurrentStorage());
+            if( forImagesFiles.size() != forTextFiles.size() ){
+                System.out.println("[ERROR]Files count in text: " + forTextFiles.size()
+                        + ", images: " + forImagesFiles.size()
+                        + ", count of files is wrong, choise next storage");
+                idFmReport.setNextCurrentStorage();
+                continue;
+            }
+            
+            System.out.println("Files count in text and images storage: " + forTextFiles.size());
+            IdDocTypeFileManager managetDocType = new IdDocTypeFileManager(creatorDirFilesForDocTypes,
+                idFmReport);
+            managetDocType.processDetectFileTypes(forTextFiles);
+            forImagesFiles.clear();
+            forTextFiles.clear();
+            idFmReport.setNextCurrentStorage();
+        }
+    }
     private static void runDictonariesBuilder(){
         IdFileManager idFmReport = new IdFileManager();
         IdDictManager idDictManager = new IdDictManager(idFmReport);
         idDictManager.buildHtmlImagesTextFromOCRFolders();
+        
     }
     private static void oldCodeFor(){
     /*ArrayList<Path> dirReportXls = new ArrayList<Path> ();

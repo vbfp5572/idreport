@@ -36,9 +36,37 @@ public class IdDictFileManager {
 
     private IdFileManager idInnerFmReport;
     private Path dirDictonaries;
+    private Path dirDictonariesBlank;
     private Path dirDictonariesUnfiltered;
     private Path dirDictonariesWord;
     private Path currentReportFolder;
+    
+    private static final String DIR_DOC_TYPE_AOCP = "AOCP";
+    private static final String DIR_DOC_TYPE_AOOK = "AOOK";
+    private static final String DIR_DOC_TYPE_ABK = "ABK";
+    private static final String DIR_DOC_TYPE_AKTDONEAKZ = "AKTDONEAKZ";
+    private static final String DIR_DOC_TYPE_AKTRASTKOMPENS = "AKTRASTKOMPENS";
+    private static final String DIR_DOC_TYPE_AKTISPTRUB = "AKTISPTRUB";
+    private static final String DIR_DOC_TYPE_SERT = "SERT";
+    private static final String DIR_DOC_TYPE_PASP = "PASP";
+    private static final String DIR_DOC_TYPE_BETONPROTOK = "BETONPROTOK";
+    private static final String DIR_DOC_TYPE_BETONRESULTISP = "BETONRESULTISP";
+    private static final String DIR_DOC_TYPE_BETONRECEPT = "BETONRECEPT";
+    private static final String DIR_DOC_TYPE_ISPSHEMA = "ISPSHEMA";
+    private static final String DIR_DOC_TYPE_VIK = "VIK";
+    private static final String DIR_DOC_TYPE_UZK = "UZK";
+    private static final String DIR_DOC_TYPE_KS2 = "KS2";
+    private static final String DIR_DOC_TYPE_KS6 = "KS6";
+    private static final String DIR_DOC_TYPE_JOURNAL = "JOURNAL";
+    private static final String DIR_DOC_TYPE_JOURNALAKZ = "JOURNALAKZ";
+    private static final String DIR_DOC_TYPE_JOURNALBETON = "JOURNALBETON";
+    private static final String DIR_DOC_TYPE_JOURNALBUR = "JOURNALBUR";
+    private static final String DIR_DOC_TYPE_JOURNALPOGR = "JOURNALPOGR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKI = "JOURNALSVARKI";
+    private static final String DIR_DOC_TYPE_JOURNALMONTAJKONSTR = "JOURNALMONTAJKONSTR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKITRUB = "JOURNALSVARKITRUB";
+    private static final String DIR_DOC_TYPE_JOURNALSOBSCHII = "JOURNALOBSCHII";
+    private static final String DIR_DOC_TYPE_UNDEF = "UNDEF";
     
     private static final String DECLINE = "decline";
     private static final String ACCEPT = "accept";
@@ -50,10 +78,11 @@ public class IdDictFileManager {
     public IdDictFileManager(IdFileManager idOuterFmReport) {
         idInnerFmReport = idOuterFmReport;
         dirDictonaries = idInnerFmReport.getDirDictonaries();
+        dirDictonariesBlank = idInnerFmReport.getDirDictonariesBlank();
         dirDictonariesUnfiltered = idInnerFmReport.getDirDictonariesUnfiltered();
         dirDictonariesWord = idInnerFmReport.getDirDictonariesWord();
         currentReportFolder = idInnerFmReport.getCurrentReportDir();
-        
+        createDictBlankFileStorages();
         checkOrCreateSubDictonariesDir(DECLINE);
         checkOrCreateSubDictonariesDir(ACCEPT);
         
@@ -96,6 +125,64 @@ public class IdDictFileManager {
         Path returnFileName = getDictonariesUnfilteredDirDeclineNewFile();
         return returnFileName;
     }
+    private void createDictBlankFileStorages(){
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_AOCP);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_AOOK);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_ABK);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_AKTDONEAKZ);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_AKTRASTKOMPENS);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_AKTISPTRUB);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_SERT);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_PASP);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_BETONPROTOK);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_BETONRESULTISP);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_BETONRECEPT);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_ISPSHEMA);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_VIK);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_UZK);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_KS2);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_KS6);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNAL);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALAKZ);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALBETON);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALBUR);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALPOGR);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALSVARKI);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALMONTAJKONSTR);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALSVARKITRUB);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_JOURNALSOBSCHII);
+        getDictonariesBlankFileForWord(DIR_DOC_TYPE_UNDEF);
+    }
+    
+    protected Path getDictonariesBlankFileForWord(String creationFileName){
+        Path toReturn = Paths.get(dirDictonariesBlank.toString(),creationFileName + FILE_EXTENTION);
+        if( Files.exists(toReturn, LinkOption.NOFOLLOW_LINKS) ){
+            try {
+                pathIsNotFile(toReturn);
+                pathIsNotReadWriteLink(toReturn);
+                return toReturn;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + toReturn.toString());
+            }
+        }
+        try {
+            Files.createFile(toReturn);
+            try {
+                pathIsNotFile(toReturn);
+                pathIsNotReadWriteLink(toReturn);
+                return toReturn;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link " + toReturn.toString());
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t createFile " + toReturn.toString());
+        }
+        return toReturn;
+    }
+    
     protected Path getDictonariesUnfilteredDirDeclineNewFile(){
         Path checkOrCreateSubDictonariesUnfilteredDir = checkOrCreateSubDictonariesUnfilteredDir(DECLINE);
         //@todo get new name or use founded

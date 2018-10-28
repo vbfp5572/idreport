@@ -20,6 +20,7 @@ import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -30,52 +31,82 @@ import java.util.Date;
  *
  * @author СДО
  */
-public enum IdFileDirCreator {
-    ROOT_FOLDER(Paths.get("D:/")),
-    DOC_TYPES_FOLDER(foundForFirstNotLockFolder()),
-    DIR_DOC_TYPE_AOCP(Paths.get(DOC_TYPES_FOLDER.toString(),"AOCP")),
-    DIR_DOC_TYPE_AOOK(Paths.get(DOC_TYPES_FOLDER.toString(),"AOOK")),
-    DIR_DOC_TYPE_ABK(Paths.get(DOC_TYPES_FOLDER.toString(),"ABK")),
-    DIR_DOC_TYPE_AKTDONEAKZ(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTDONEAKZ")),
-    DIR_DOC_TYPE_AKTRASTKOMPENS(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTRASTKOMPENS")),
-    DIR_DOC_TYPE_AKTISPTRUB(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTISPTRUB")),
-    DIR_DOC_TYPE_SERT(Paths.get(DOC_TYPES_FOLDER.toString(),"SERT")),
-    DIR_DOC_TYPE_PASP(Paths.get(DOC_TYPES_FOLDER.toString(),"PASP")),
-    DIR_DOC_TYPE_BETONPROTOK(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONPROTOK")),
-    DIR_DOC_TYPE_BETONRESULTISP(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONRESULTISP")),
-    DIR_DOC_TYPE_BETONRECEPT(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONRECEPT")),
-    DIR_DOC_TYPE_ISPSHEMA(Paths.get(DOC_TYPES_FOLDER.toString(),"ISPSHEMA")),
-    DIR_DOC_TYPE_VIK(Paths.get(DOC_TYPES_FOLDER.toString(),"VIK")),
-    DIR_DOC_TYPE_UZK(Paths.get(DOC_TYPES_FOLDER.toString(),"UZK")),
-    DIR_DOC_TYPE_KS2(Paths.get(DOC_TYPES_FOLDER.toString(),"KS2")),
-    DIR_DOC_TYPE_KS6(Paths.get(DOC_TYPES_FOLDER.toString(),"KS6")),
-    DIR_DOC_TYPE_JOURNAL(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNAL")),
-    DIR_DOC_TYPE_JOURNALAKZ(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALAKZ")),
-    DIR_DOC_TYPE_JOURNALBETON(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALBETON")),
-    DIR_DOC_TYPE_JOURNALBUR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALBUR")),
-    DIR_DOC_TYPE_JOURNALPOGR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALPOGR")),
-    DIR_DOC_TYPE_JOURNALSVARKI(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALSVARKI")),
-    DIR_DOC_TYPE_JOURNALMONTAJKONSTR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALMONTAJKONSTR")),
-    DIR_DOC_TYPE_JOURNALSVARKITRUB(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALSVARKITRUB")),
-    DIR_DOC_TYPE_JOURNALSOBSCHII(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALOBSCHII")),
-    DIR_DOC_TYPE_UNDEF(Paths.get(DOC_TYPES_FOLDER.toString(),"UNDEF"));
+public class IdDocTypeFileDirCreator {
+    private static final String ROOT_DIR = "D:/";
+    private static final String DOC_TYPES_DIR = "docObjType";
+    private static final String DIR_DOC_TYPE_AOCP = "AOCP";
+    private static final String DIR_DOC_TYPE_AOOK = "AOOK";
+    private static final String DIR_DOC_TYPE_ABK = "ABK";
+    private static final String DIR_DOC_TYPE_AKTDONEAKZ = "AKTDONEAKZ";
+    private static final String DIR_DOC_TYPE_AKTRASTKOMPENS = "AKTRASTKOMPENS";
+    private static final String DIR_DOC_TYPE_AKTISPTRUB = "AKTISPTRUB";
+    private static final String DIR_DOC_TYPE_SERT = "SERT";
+    private static final String DIR_DOC_TYPE_PASP = "PASP";
+    private static final String DIR_DOC_TYPE_BETONPROTOK = "BETONPROTOK";
+    private static final String DIR_DOC_TYPE_BETONRESULTISP = "BETONRESULTISP";
+    private static final String DIR_DOC_TYPE_BETONRECEPT = "BETONRECEPT";
+    private static final String DIR_DOC_TYPE_ISPSHEMA = "ISPSHEMA";
+    private static final String DIR_DOC_TYPE_VIK = "VIK";
+    private static final String DIR_DOC_TYPE_UZK = "UZK";
+    private static final String DIR_DOC_TYPE_KS2 = "KS2";
+    private static final String DIR_DOC_TYPE_KS6 = "KS6";
+    private static final String DIR_DOC_TYPE_JOURNAL = "JOURNAL";
+    private static final String DIR_DOC_TYPE_JOURNALAKZ = "JOURNALAKZ";
+    private static final String DIR_DOC_TYPE_JOURNALBETON = "JOURNALBETON";
+    private static final String DIR_DOC_TYPE_JOURNALBUR = "JOURNALBUR";
+    private static final String DIR_DOC_TYPE_JOURNALPOGR = "JOURNALPOGR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKI = "JOURNALSVARKI";
+    private static final String DIR_DOC_TYPE_JOURNALMONTAJKONSTR = "JOURNALMONTAJKONSTR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKITRUB = "JOURNALSVARKITRUB";
+    private static final String DIR_DOC_TYPE_JOURNALSOBSCHII = "JOURNALOBSCHII";
+    private static final String DIR_DOC_TYPE_UNDEF = "UNDEF";
+
+    private static final String DOC_TYPE_LOCK_FILE_NAME_EXT = "status.lck";
     
-    private static final String DOC_TYPES_PREFIX = "docObjType";
-    private static final String LOCK_FILE_NAME_EXT = "status.lck";
+    private Path operationsDir;
     
-    private Path operationsFolder;
-    
-    IdFileDirCreator(Path operationsFolderInputed){
-        this.operationsFolder = operationsFolderInputed;
+    IdDocTypeFileDirCreator(){
+        this.operationsDir = foundForFirstNotLockDir();
+    }
+    protected Path getCurrentDir(){
+        return this.operationsDir;
+    }
+    private void createAllSubFodersInCurrent(){
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_AOCP);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_AOOK);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_ABK);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_AKTDONEAKZ);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_AKTRASTKOMPENS);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_AKTISPTRUB);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_SERT);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_PASP);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_BETONPROTOK);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_BETONRESULTISP);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_BETONRECEPT);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_ISPSHEMA);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_VIK);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_UZK);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_KS2);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_KS6);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNAL);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALAKZ);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALBETON);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALBUR);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALPOGR);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALSVARKI);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALMONTAJKONSTR);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALSVARKITRUB);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_JOURNALSOBSCHII);
+        getCheckedSubCurrentDir(DIR_DOC_TYPE_UNDEF);
     }
     
-    private static Path foundForFirstNotLockFolder(){
+    private static Path foundForFirstNotLockDir(){
         //@todo scan dirs for nor set *.lck file and return for current operations
-        Path workPath = Paths.get(ROOT_FOLDER.toString());
+        Path workPath = Paths.get(ROOT_DIR);
         System.out.println("[INFO]In Root folder, path " + workPath.toString());
         System.out.println("[INFO]found dirictories: ");
         int count = 0;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workPath,"*{" + DOC_TYPES_PREFIX + "}")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workPath,"*{" + DOC_TYPES_DIR + "}")) {
         for (Path entry : stream) {
             try {
                 pathIsNotReadWriteLink(entry);
@@ -90,39 +121,38 @@ public enum IdFileDirCreator {
                 System.out.println("[ERROR] Not directory, path " + entry.toString());
             }
 
-            Path forCheckCompiled = Paths.get(entry.toString(),LOCK_FILE_NAME_EXT);
+            Path forCheckCompiled = Paths.get(entry.toString(),DOC_TYPE_LOCK_FILE_NAME_EXT);
             if( Files.notExists(forCheckCompiled) ){
                 count++;
                 return entry;
             }
         }
         if( count == 0 ){
-            Path forNewStorage = Paths.get(IdFileDirCreator.ROOT_FOLDER.getFolderForNewProcess().toString(),DOC_TYPES_PREFIX);
-            System.out.println("Directory is Empty, created new Folder for storage " + forNewStorage.toString());
+            Path forNewStorage = getDirForNewProcess();
+            System.out.println("Directory is Empty, created new Dir for storage " + forNewStorage.toString());
             return forNewStorage;
         }
+        } catch (NoSuchFileException e) {
+            //e.printStackTrace();
+            System.out.println("[INFO] Directories not founded in work directory " + workPath.toString());
+            return getDirForNewProcess();
         } catch (IOException | DirectoryIteratorException e) {
             e.printStackTrace();
             System.out.println("[ERROR] Can`t read count files in work directory " + workPath.toString());
-        }
-        return IdFileDirCreator.ROOT_FOLDER.getFolderForNewProcess();
+        } 
+        return getDirForNewProcess();
     }
-    protected Path getFolderForNewProcess(){
+    protected static Path getDirForNewProcess(){
         String processIdForNow = getNewProcessId();
-        Path forNewOperationsDir = operationsFolder;
-        if ( forNewOperationsDir == null){
-            return checkDirsExistOrCreate(Paths.get(ROOT_FOLDER.toString(), DOC_TYPES_PREFIX + processIdForNow));
-        }
-        Path doItForFolder = Paths.get(operationsFolder.toString(),  processIdForNow);
-        return checkDirsExistOrCreate(doItForFolder);
+        return checkDirsExistOrCreate(Paths.get(ROOT_DIR, processIdForNow + DOC_TYPES_DIR));
     }
-    protected Path getSubCurrentFolder(){
-        Path doItForFolder = Paths.get(foundForFirstNotLockFolder().toString());
-        return checkDirsExistOrCreate(doItForFolder);
+    protected Path getCheckedSubCurrentDir(String subDir){
+        Path doItForDir = Paths.get(operationsDir.toString(), subDir);
+        return checkDirsExistOrCreate(doItForDir);
     }
-    protected Path setLockForFolder(){
+    protected Path setLockForCurrentDir(){
         String processIdForNow = getNewProcessId();
-        Path lockedFilePath = Paths.get(operationsFolder.toString(),LOCK_FILE_NAME_EXT);
+        Path lockedFilePath = Paths.get(operationsDir.toString(),DOC_TYPE_LOCK_FILE_NAME_EXT);
         try{
             if( Files.notExists(lockedFilePath) ){
                 Files.createFile(lockedFilePath);
@@ -146,7 +176,7 @@ public enum IdFileDirCreator {
             }
             pathIsNotDirectory(foderForCheck);
             pathIsNotReadWriteLink(foderForCheck);
-            System.out.println("[DIR_EXIST] Readed, Writed and NotLink, path: " + foderForCheck.toString());
+            System.out.println("[DIR_EXIST] Readed, Writed and NotLink, path: " + foderForCheck.toAbsolutePath().toString());
         } catch (IOException ex) {
             System.out.println("[ERROR]Can`t create new file, directory not exist or not have permissions " + foderForCheck.toString()
                     + ex.getMessage());

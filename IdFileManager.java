@@ -48,6 +48,7 @@ public class IdFileManager {
     private static final String HTML_IMAGES_OCR_TEXT_REPORT = "html-ocr-img-txt-report";
     private static final String XLS_REPORTS = "xlsx";
     private static final String DIR_DICTONARIES = "dict";
+    private static final String DIR_DICTONARIES_BLANK = "dict-blank";
     private static final String DIR_DICTONARIES_UNFILTERED = "dict-unf";
     private static final String DIR_DICTONARIES_WORD = "dict-word";
     private static final String FILE_ALL_UNFILTERED_WORD = "dict-unf.txt";
@@ -132,6 +133,7 @@ public class IdFileManager {
         checkOrCreateSubWorkDir(HTML);
         checkOrCreateSubWorkDir(XLS_REPORTS);
         checkOrCreateSubWorkDir(DIR_DICTONARIES);
+        checkOrCreateSubWorkDir(DIR_DICTONARIES_BLANK);
         checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
         checkOrCreateSubWorkDir(DIR_DICTONARIES_WORD);
         
@@ -259,6 +261,10 @@ public class IdFileManager {
        return checkOrCreateSubWorkDir(DIR_DICTONARIES);
     }
     
+    protected Path getDirDictonariesBlank(){
+       return checkOrCreateSubWorkDir(DIR_DICTONARIES_BLANK);
+    }
+    
     protected Path getDirDictonariesUnfiltered(){
        return checkOrCreateSubWorkDir(DIR_DICTONARIES_UNFILTERED);
     }
@@ -375,6 +381,27 @@ public class IdFileManager {
                     System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
                 }
         }
+    }
+    protected ArrayList<Path> getDctFilesFromDictonariesBlankDir(){
+        ArrayList<Path> forReturn = new ArrayList<Path>();
+        Path lookPath = getDirDictonariesBlank();
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(lookPath,"*.{dct}")) {
+            for (Path entry : stream) {
+                pathIsNotReadWriteLink(entry);
+                pathIsNotFile(entry);
+                forReturn.add(entry);
+                count++;
+            }
+        if( count == 0 ){
+            System.out.println("Directory is Empty " + lookPath.toString());
+        }
+        } catch (IOException | DirectoryIteratorException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
+        }
+        return forReturn;
+            
     }
     protected ArrayList<Path> getXlsxFilesFromReportDir(){
         ArrayList<Path> forReturn = new ArrayList<Path>();
