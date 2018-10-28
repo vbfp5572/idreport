@@ -374,6 +374,7 @@ public class IdReporter {
                 
             }
             if( catchedCount > 0 ){
+                
                 if( (percentABK/catchedCount) > (percentAOCP/catchedCount) ){
                     strFiltered.set(1, ABK_DETECTED);
                 }

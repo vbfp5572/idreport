@@ -50,24 +50,41 @@ public class IdDocTypeFileManager {
                 ex.printStackTrace();
                 System.out.println("[ERROR] Can`t read lines from file " + fileEnemy.toAbsolutePath().toString());
             }
-            detectFileType(lines);
+            String detectFileType = detectFileType(lines);
+            //@todo function whos do record to journal
         }
         
     }
-    private void detectFileType(ArrayList<String> outerLinesFromSrcFile){
+    private String detectFileType(ArrayList<String> outerLinesFromSrcFile){
         ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
         dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
+       
         for(Path fileEnemy : dictonariesBlank){
             ArrayList<String> linesFromBlank = new ArrayList<String>();
             linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
-            detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
+            Double detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
+            if(  detectFileTypeAndWriteRecordToJournal > 50 ){
+                
+                return fileEnemy.getFileName().toString().replaceAll("\\.dct", "")
+                    + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
+            }
+            
         }
+        return "UNDEFINED";
     }
-    private void detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
+    private Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
             ArrayList<String> linesFromBlank){
+        Integer countContains = 0;
         for(String fileEnemy : outerLinesFromSrcFile){
-        
+            //@todo compare algoritm here
+            for(String blankEnemy : linesFromBlank){
+                if( fileEnemy.toLowerCase().contains(blankEnemy.toLowerCase()) ){
+                    countContains++;
+                }
+            }
         }
+        Integer countRecoedsInBlank = linesFromBlank.size();
+        return ( countContains.doubleValue()  / countRecoedsInBlank.doubleValue() );
     }
     private ArrayList<String> getBlankWordFromFile(Path fileEnemy){
         ArrayList<String> lines = new ArrayList<String>();
