@@ -43,10 +43,10 @@ public class IdDictManager {
         currentReportHtmlDir = idInnerFmReport.getDirDictonariesHtml();
     }
     protected void buildHtmlImagesTextFromOCRFolders(){
-        storageWalker();
+        storageImgesOcrTextReportCreator();
     }
     
-    protected void storageWalker(){
+    private void storageImgesOcrTextReportCreator(){
         Integer sizeStoragesList = idInnerFmReport.getSizeStoragesList();
         //idInnerFmReport.
         
@@ -76,7 +76,7 @@ public class IdDictManager {
             idInnerFmReport.setNextCurrentStorage();
         }
     }
-    protected void buildSumFileReport(String newProcessId,
+    private void buildSumFileReport(String newProcessId,
             String currentStorageStringOuter,
             String readedSrcStringOuter,
             ArrayList<Path> forTextFilesOuter, 
@@ -177,7 +177,7 @@ public class IdDictManager {
             "}";
     }
     
-    protected void buildDictonariesByRunnable(){
+    private void buildDictonariesByRunnable(){
         
     }
     private void putSplitedLinesIntoFoldersByRunnable(ArrayList<String> linesFromFile, Boolean lastFileOuterFlag){
@@ -189,7 +189,7 @@ public class IdDictManager {
             spliterExec.start();
         }
     }
-    protected void putSplitLineAndPutToDictonaries(ArrayList<String> linesFromFile, Boolean lastFileOuterFlag){
+    private void putSplitLineAndPutToDictonaries(ArrayList<String> linesFromFile, Boolean lastFileOuterFlag){
         Path checkDirForFileName = dictFileManager.getCheckDirForFileName();
         ArrayList<String> fileLines = new ArrayList<String>();
         for (String linesReadedFromTextFile : linesFromFile) {

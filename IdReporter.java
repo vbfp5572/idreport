@@ -61,16 +61,17 @@ public class IdReporter {
     private Path currentReportFolder;
     
     private String NOT_DETECTED = "|_|_|_|_|NotDetectedType|_|_|_|_|";
+    private String ABK_DETECTED = "|_|_|_|_|ABK|_|_|_|_|";
     private String AOCP_DETECTED = "|_|_|_|_|AOCP|_|_|_|_|";
+    private String AOCP_PAGE1_DETECTED = "|_|_|_|_|AOCP-P1|_|_|_|_|";
+    private String AOCP_PAGE2_DETECTED = "|_|_|_|_|AOCP-P2|_|_|_|_|";
     private String AKT_OTHER = "|_|_|_|_|OTHER_AKT|_|_|_|_|";
     private String SCHEME = "|_|_|_|_|SCHEME|_|_|_|_|";
     private String PROTOKOL = "|_|_|_|_|PROTOKOL|_|_|_|_|";
     private String REZULT = "|_|_|_|_|RESULT|_|_|_|_|";
     private String SERTIFICAT = "|_|_|_|_|SERTIFICAT|_|_|_|_|";
     private String PASPORT = "|_|_|_|_|PASPORT|_|_|_|_|";
-    private String AOCP_PAGE1_DETECTED = "|_|_|_|_|AOCP-P1|_|_|_|_|";
-    private String AOCP_PAGE2_DETECTED = "|_|_|_|_|AOCP-P2|_|_|_|_|";
-    private String ABK_DETECTED = "|_|_|_|_|ABK|_|_|_|_|";
+    
     private String ALL_LINES_NOT_FILTERED = "|_|_|_|_|allLinesNotFilteredInFile|_|_|_|_|";
     
     

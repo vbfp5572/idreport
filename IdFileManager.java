@@ -61,6 +61,39 @@ public class IdFileManager {
     private static final String CSS_EXT = ".css";
     private static final String JS_EXT = ".js";
     
+    private static final String DIR_DOC_OBJ_TYPE = "doc-obj-type";
+    
+    private static final String DIR_DOC_TYPE_AOCP = "AOCP";
+    private static final String DIR_DOC_TYPE_AOOK = "AOOK";
+    private static final String DIR_DOC_TYPE_ABK = "ABK";
+    private static final String DIR_DOC_TYPE_AKTDONEAKZ = "AKTDONEAKZ";
+    private static final String DIR_DOC_TYPE_AKTRASTKOMPENS = "AKTRASTKOMPENS";
+    private static final String DIR_DOC_TYPE_AKTISPTRUB = "AKTISPTRUB";
+    private static final String DIR_DOC_TYPE_SERT = "SERT";
+    private static final String DIR_DOC_TYPE_PASP = "PASP";
+    private static final String DIR_DOC_TYPE_BETONPROTOK = "BETONPROTOK";
+    private static final String DIR_DOC_TYPE_BETONRESULTISP = "BETONRESULTISP";
+    private static final String DIR_DOC_TYPE_BETONRECEPT = "BETONRECEPT";
+    private static final String DIR_DOC_TYPE_ISPSHEMA = "ISPSHEMA";
+    private static final String DIR_DOC_TYPE_VIK = "VIK";
+    private static final String DIR_DOC_TYPE_UZK = "UZK";
+    private static final String DIR_DOC_TYPE_KS2 = "KS2";
+    private static final String DIR_DOC_TYPE_KS6 = "KS6";
+    
+    private static final String DIR_DOC_TYPE_JOURNAL = "JOURNAL";
+    private static final String DIR_DOC_TYPE_JOURNALAKZ = "JOURNALAKZ";
+    private static final String DIR_DOC_TYPE_JOURNALBETON = "JOURNALBETON";
+    private static final String DIR_DOC_TYPE_JOURNALBUR = "JOURNALBUR";
+    private static final String DIR_DOC_TYPE_JOURNALPOGR = "JOURNALPOGR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKI = "JOURNALSVARKI";
+    private static final String DIR_DOC_TYPE_JOURNALMONTAJKONSTR = "JOURNALMONTAJKONSTR";
+    private static final String DIR_DOC_TYPE_JOURNALSVARKITRUB = "JOURNALSVARKITRUB";
+    private static final String DIR_DOC_TYPE_JOURNALSOBSCHII = "JOURNALOBSCHII";
+    
+    private static final String DIR_DOC_TYPE_UNDEF = "UNDEF";
+    
+    
+    
     private Path currentReportFolder;
     private Path currentReportHtmlFolder;
     
@@ -122,8 +155,6 @@ public class IdFileManager {
         return currentReportHtmlFolder;
     }
     protected static void writeLinesToFile(String strCfgPath, ArrayList<String> strTextRemark){
-        
-        
         try(BufferedWriter bw = new BufferedWriter(new FileWriter(strCfgPath)))
         {
             for(String itemStr : strTextRemark){
@@ -423,7 +454,6 @@ public class IdFileManager {
         for (Path entry : stream) {
             workFolders.add(entry);
             count++;
-            
         }
         if( count == 0 ){
             System.out.println("Directory is Empty " + workPath.toString());
@@ -484,16 +514,11 @@ public class IdFileManager {
     }
     protected static String getNewProcessId(){
         long currentDateTime = System.currentTimeMillis();
-      
        //creating Date from millisecond
        Date currentDate = new Date(currentDateTime);
-      
        //printing value of Date
        //System.out.println("current Date: " + currentDate);
-      
        DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
-       
-      
        //formatted value of current Date
        return df.format(currentDate);
     }
@@ -569,14 +594,11 @@ public class IdFileManager {
                 if( !Files.exists(forCheckCompiled) ){
                     currentReportFolder = entry;
                 }
-                
             } catch (IOException ex) {
                 ex.printStackTrace();
                 System.out.println("[ERROR] Not readable, writeable or link " + entry.toString());
             }
-            
             count++;
-            
         }
         if( count == 0 ){
             System.out.println("Directory is Empty " + workPath.toString());
