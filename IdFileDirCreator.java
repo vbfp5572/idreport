@@ -30,17 +30,67 @@ import java.util.Date;
  */
 public enum IdFileDirCreator {
     ROOT_FOLDER(Paths.get("D:/")),
-    DOC_TYPES_FOLDER(Paths.get(ROOT_FOLDER.toString(),"docObjType"));
+    DOC_TYPES_FOLDER(Paths.get(ROOT_FOLDER.toString(),"docObjType")),
+    DIR_DOC_TYPE_AOCP(Paths.get(DOC_TYPES_FOLDER.toString(),"AOCP")),
+    DIR_DOC_TYPE_AOOK(Paths.get(DOC_TYPES_FOLDER.toString(),"AOOK")),
+    DIR_DOC_TYPE_ABK(Paths.get(DOC_TYPES_FOLDER.toString(),"ABK")),
+    DIR_DOC_TYPE_AKTDONEAKZ(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTDONEAKZ")),
+    DIR_DOC_TYPE_AKTRASTKOMPENS(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTRASTKOMPENS")),
+    DIR_DOC_TYPE_AKTISPTRUB(Paths.get(DOC_TYPES_FOLDER.toString(),"AKTISPTRUB")),
+    DIR_DOC_TYPE_SERT(Paths.get(DOC_TYPES_FOLDER.toString(),"SERT")),
+    DIR_DOC_TYPE_PASP(Paths.get(DOC_TYPES_FOLDER.toString(),"PASP")),
+    DIR_DOC_TYPE_BETONPROTOK(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONPROTOK")),
+    DIR_DOC_TYPE_BETONRESULTISP(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONRESULTISP")),
+    DIR_DOC_TYPE_BETONRECEPT(Paths.get(DOC_TYPES_FOLDER.toString(),"BETONRECEPT")),
+    DIR_DOC_TYPE_ISPSHEMA(Paths.get(DOC_TYPES_FOLDER.toString(),"ISPSHEMA")),
+    DIR_DOC_TYPE_VIK(Paths.get(DOC_TYPES_FOLDER.toString(),"VIK")),
+    DIR_DOC_TYPE_UZK(Paths.get(DOC_TYPES_FOLDER.toString(),"UZK")),
+    DIR_DOC_TYPE_KS2(Paths.get(DOC_TYPES_FOLDER.toString(),"KS2")),
+    DIR_DOC_TYPE_KS6(Paths.get(DOC_TYPES_FOLDER.toString(),"KS6")),
+    DIR_DOC_TYPE_JOURNAL(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNAL")),
+    DIR_DOC_TYPE_JOURNALAKZ(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALAKZ")),
+    DIR_DOC_TYPE_JOURNALBETON(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALBETON")),
+    DIR_DOC_TYPE_JOURNALBUR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALBUR")),
+    DIR_DOC_TYPE_JOURNALPOGR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALPOGR")),
+    DIR_DOC_TYPE_JOURNALSVARKI(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALSVARKI")),
+    DIR_DOC_TYPE_JOURNALMONTAJKONSTR(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALMONTAJKONSTR")),
+    DIR_DOC_TYPE_JOURNALSVARKITRUB(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALSVARKITRUB")),
+    DIR_DOC_TYPE_JOURNALSOBSCHII(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALOBSCHII")),
+    DIR_DOC_TYPE_UNDEF(Paths.get(DOC_TYPES_FOLDER.toString(),"UNDEF"));
+    
+    private static String LOCK_EXT = ".lck";
+    
     private Path operationsFolder;
     IdFileDirCreator(Path operationsFolderInputed){
         this.operationsFolder = operationsFolderInputed;
     }
     protected Path getFolderForNewProcess(){
         String processIdForNow = getNewProcessId();
-        Path cssFile = Paths.get(operationsFolder.toString(),  processIdForNow);
-        
-        return operationsFolder;
+        Path doItForFolder = Paths.get(operationsFolder.toString(),  processIdForNow);
+        return checkDirsExistOrCreate(doItForFolder);
     }
+    protected Path getSubCurrentFolder(){
+        Path doItForFolder = Paths.get(operationsFolder.toString());
+        return checkDirsExistOrCreate(doItForFolder);
+    }
+    protected Path setLockForFolder(){
+        String processIdForNow = getNewProcessId();
+        Path lockedFilePath = Paths.get(operationsFolder.toString(),processIdForNow + LOCK_EXT);
+        try{
+            if( Files.notExists(lockedFilePath) ){
+                Files.createFile(lockedFilePath);
+                System.out.println("[CREATELOCK]In file " + lockedFilePath.toString());
+            }
+            pathIsNotFile(lockedFilePath);
+            pathIsNotReadWriteLink(lockedFilePath);
+        } catch (IOException ex) {
+            System.out.println("[ERROR]Can`t create lock file " + lockedFilePath.toString()
+                    + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return lockedFilePath;
+    }
+    
     protected static Path checkDirsExistOrCreate(Path foderForCheck){
         try{
             if( Files.notExists(foderForCheck) ){

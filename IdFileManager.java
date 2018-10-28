@@ -416,7 +416,6 @@ public class IdFileManager {
             System.out.println("[ERROR] Can`t read count files in work directory " + lookPath.toString());
         }
         return forReturn;
-            
     }
     protected ArrayList<Path> getImagesFilesFromCurrentStorage(){
         ArrayList<Path> forReturn = new ArrayList<Path>();
