@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -66,6 +67,7 @@ public class IdDictManager {
 
             ArrayList<Path> forImagesFiles = new ArrayList<Path>();
             forImagesFiles.addAll(idInnerFmReport.getImagesFilesFromCurrentStorage());
+            
             buildSumFileReport(newProcessId + "-s-id-" + i,
                     currentStorageString,
                     readedSrcString,
@@ -115,8 +117,10 @@ public class IdDictManager {
                 + readedSrcStringOuter 
                 + "</td></tr>";
         linesToReportFile.add(forBuildHead);
-        String imgPrefix = newProcessId + "img_el";
-        String textPreFix = newProcessId + "txt_ocr_el";
+        
+        String strProcessId = newProcessId.replaceAll("-", "");
+        String imgPrefix = strProcessId + "img_el_";
+        String textPreFix = strProcessId + "txt_ocr_el_";
         if( forImagesFilesOuter.size() == forTextFilesOuter.size() ){
             int idxFile = 0;
             for (Path imagesFile : forImagesFilesOuter) {
@@ -128,10 +132,10 @@ public class IdDictManager {
                 forBuild = "<tr><td>"
                         + "<input type=\"button\" id=\"but" + imgPrefix + idxFile + "\" value=\"" + fileNameImagesFile.toString() + "\" onclick=\"hideShowDiv" + imgPrefix + idxFile + "();\">"
                         + "</td>"
-                        + "<td><div id=\"id-src-" + imgPrefix + "_num" + idxFile + "\">" 
+                        + "<td><div id=\"id_src_" + imgPrefix + "_num" + idxFile + "\">" 
                         + "<img src=\"" + toStringImagesFile + "\" width=\"70%\" height=\"70%\" style=\"padding:0px 2px;border:1px solid black\">" 
                         + "</div></td><td>" 
-                        + "<div id=\"id-src-" + textPreFix + "_num" + idxFile + "\"><iframe src=\"" + toStringTextFiles + "\" width=\"100%\" height=\"100%\">" + forTextFilesOuter.get(idxFile).toString() + "</iframe>" 
+                        + "<div id=\"id_src_" + textPreFix + "_num" + idxFile + "\"><iframe src=\"" + toStringTextFiles + "\" width=\"100%\" height=\"100%\">" + forTextFilesOuter.get(idxFile).toString() + "</iframe>" 
                         + "</div></td><td>"
                         + "<input type=\"button\" id=\"but" + textPreFix + idxFile + "\" value=\"" + fileNameTextFiles.toString() + "\" onclick=\"hideShowDiv" + textPreFix + idxFile + "();\">"
                         + "</td></tr>";
@@ -158,7 +162,7 @@ public class IdDictManager {
     }
     private String getCssStructText(String preFix, Integer idDivContainer){
         //In generation function append before this string #div_id
-        return "#id-src-" + preFix + "_num" + idDivContainer + "{\n" +
+        return "#id_src_" + preFix + "_num" + idDivContainer + "{\n" +
             "    width:70%;\n" +
             "    height:70%;\n" +
             "    background:#666699;\n" +
@@ -169,7 +173,7 @@ public class IdDictManager {
     }
     private String getJsText(String preFix, Integer idDivContainer){
         return "function hideShowDiv" + preFix + idDivContainer + "(){\n" +
-            "      $(\"#id-src-" + preFix + "_num" + idDivContainer + "\").toggle(\"slow\");\n" +
+            "      $(\"#id_src_" + preFix + "_num" + idDivContainer + "\").toggle(\"slow\");\n" +
             "}";
     }
     
