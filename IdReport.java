@@ -29,7 +29,8 @@ public class IdReport {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        runDictonariesBuilder();
+        Path subCurrentFolder = IdFileDirCreator.DIR_DOC_TYPE_ABK.getSubCurrentFolder();
+        //runDictonariesBuilder();
         //runProcessForCreateXlsReestr();
         //runProcessForCreateXlsReestrOnlyTwoStorages();
         

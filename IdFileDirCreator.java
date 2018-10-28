@@ -16,6 +16,8 @@
 package ru.vbfp.idreport;
 
 import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -30,7 +32,7 @@ import java.util.Date;
  */
 public enum IdFileDirCreator {
     ROOT_FOLDER(Paths.get("D:/")),
-    DOC_TYPES_FOLDER(Paths.get(ROOT_FOLDER.toString(),"docObjType")),
+    DOC_TYPES_FOLDER(foundForFirstNotLockFolder()),
     DIR_DOC_TYPE_AOCP(Paths.get(DOC_TYPES_FOLDER.toString(),"AOCP")),
     DIR_DOC_TYPE_AOOK(Paths.get(DOC_TYPES_FOLDER.toString(),"AOOK")),
     DIR_DOC_TYPE_ABK(Paths.get(DOC_TYPES_FOLDER.toString(),"ABK")),
@@ -58,24 +60,69 @@ public enum IdFileDirCreator {
     DIR_DOC_TYPE_JOURNALSOBSCHII(Paths.get(DOC_TYPES_FOLDER.toString(),"JOURNALOBSCHII")),
     DIR_DOC_TYPE_UNDEF(Paths.get(DOC_TYPES_FOLDER.toString(),"UNDEF"));
     
-    private static String LOCK_EXT = ".lck";
+    private static final String DOC_TYPES_PREFIX = "docObjType";
+    private static final String LOCK_FILE_NAME_EXT = "status.lck";
     
     private Path operationsFolder;
+    
     IdFileDirCreator(Path operationsFolderInputed){
         this.operationsFolder = operationsFolderInputed;
     }
+    
+    private static Path foundForFirstNotLockFolder(){
+        //@todo scan dirs for nor set *.lck file and return for current operations
+        Path workPath = Paths.get(ROOT_FOLDER.toString());
+        System.out.println("[INFO]In Root folder, path " + workPath.toString());
+        System.out.println("[INFO]found dirictories: ");
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workPath,"*{" + DOC_TYPES_PREFIX + "}")) {
+        for (Path entry : stream) {
+            try {
+                pathIsNotReadWriteLink(entry);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not readable, writeable or link, path " + entry.toString());
+            }
+            try {
+                pathIsNotDirectory(entry);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.out.println("[ERROR] Not directory, path " + entry.toString());
+            }
+
+            Path forCheckCompiled = Paths.get(entry.toString(),LOCK_FILE_NAME_EXT);
+            if( Files.notExists(forCheckCompiled) ){
+                count++;
+                return entry;
+            }
+        }
+        if( count == 0 ){
+            Path forNewStorage = Paths.get(IdFileDirCreator.ROOT_FOLDER.getFolderForNewProcess().toString(),DOC_TYPES_PREFIX);
+            System.out.println("Directory is Empty, created new Folder for storage " + forNewStorage.toString());
+            return forNewStorage;
+        }
+        } catch (IOException | DirectoryIteratorException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + workPath.toString());
+        }
+        return IdFileDirCreator.ROOT_FOLDER.getFolderForNewProcess();
+    }
     protected Path getFolderForNewProcess(){
         String processIdForNow = getNewProcessId();
+        Path forNewOperationsDir = operationsFolder;
+        if ( forNewOperationsDir == null){
+            return checkDirsExistOrCreate(Paths.get(ROOT_FOLDER.toString(), DOC_TYPES_PREFIX + processIdForNow));
+        }
         Path doItForFolder = Paths.get(operationsFolder.toString(),  processIdForNow);
         return checkDirsExistOrCreate(doItForFolder);
     }
     protected Path getSubCurrentFolder(){
-        Path doItForFolder = Paths.get(operationsFolder.toString());
+        Path doItForFolder = Paths.get(foundForFirstNotLockFolder().toString());
         return checkDirsExistOrCreate(doItForFolder);
     }
     protected Path setLockForFolder(){
         String processIdForNow = getNewProcessId();
-        Path lockedFilePath = Paths.get(operationsFolder.toString(),processIdForNow + LOCK_EXT);
+        Path lockedFilePath = Paths.get(operationsFolder.toString(),LOCK_FILE_NAME_EXT);
         try{
             if( Files.notExists(lockedFilePath) ){
                 Files.createFile(lockedFilePath);
@@ -117,6 +164,7 @@ public enum IdFileDirCreator {
        //formatted value of current Date
        return df.format(currentDate);
     }
+    
     private static void pathIsNotFile(Path innerWorkPath) throws IOException{
         if ( !Files.exists(innerWorkPath, LinkOption.NOFOLLOW_LINKS) ){
             System.out.println("[ERROR] File or Directory not exist: " + innerWorkPath.toString());
