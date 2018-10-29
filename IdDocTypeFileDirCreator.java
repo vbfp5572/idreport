@@ -67,6 +67,7 @@ public class IdDocTypeFileDirCreator {
     
     IdDocTypeFileDirCreator(){
         this.operationsDir = foundForFirstNotLockDir();
+        createAllSubFodersInCurrent();
     }
     protected Path getCurrentDir(){
         return this.operationsDir;
@@ -147,7 +148,9 @@ public class IdDocTypeFileDirCreator {
         return checkDirsExistOrCreate(Paths.get(ROOT_DIR, processIdForNow + DOC_TYPES_DIR));
     }
     protected Path getCheckedSubCurrentDir(String subDir){
+        
         Path doItForDir = Paths.get(operationsDir.toString(), subDir);
+        System.out.println("[INFO]DocType.getCheckedSubCurrentDir " + doItForDir.toString());
         return checkDirsExistOrCreate(doItForDir);
     }
     protected Path setLockForCurrentDir(){

@@ -29,7 +29,7 @@ public class IdReport {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
+        runTextFileSorter();
         //runDictonariesBuilder();
         //runProcessForCreateXlsReestr();
         //runProcessForCreateXlsReestrOnlyTwoStorages();
@@ -45,6 +45,7 @@ public class IdReport {
         
         for (int i = 0; i < 2; i++) {
         //for (int i = 0; i < sizeStoragesList; i++) {
+            Path currentStorge = idFmReport.getCurrentStorage();
             System.out.println("Current storage:");
             System.out.println(idFmReport.getCurrentStorage().toString());
             
@@ -66,9 +67,10 @@ public class IdReport {
             }
             
             System.out.println("Files count in text and images storage: " + forTextFiles.size());
-            IdDocTypeFileManager managetDocType = new IdDocTypeFileManager(creatorDirFilesForDocTypes,
+            IdDocTypeFileManager managerDocType = new IdDocTypeFileManager(creatorDirFilesForDocTypes,
                 idFmReport);
-            managetDocType.processDetectFileTypes(forTextFiles);
+            managerDocType.processDetectFileTypes(forTextFiles);
+            managerDocType.setLockForStorages(currentStorge);
             forImagesFiles.clear();
             forTextFiles.clear();
             idFmReport.setNextCurrentStorage();

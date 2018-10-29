@@ -50,27 +50,31 @@ public class IdDocTypeFileManager {
                 ex.printStackTrace();
                 System.out.println("[ERROR] Can`t read lines from file " + fileEnemy.toAbsolutePath().toString());
             }
-            String detectFileType = detectFileType(lines);
-            //@todo function whos do record to journal
+            detectFileType(lines);
         }
-        
     }
-    private String detectFileType(ArrayList<String> outerLinesFromSrcFile){
+    private void detectFileType(ArrayList<String> outerLinesFromSrcFile){
         ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
         dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
-       
         for(Path fileEnemy : dictonariesBlank){
             ArrayList<String> linesFromBlank = new ArrayList<String>();
             linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
             Double detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
             if(  detectFileTypeAndWriteRecordToJournal > 50 ){
-                
-                return fileEnemy.getFileName().toString().replaceAll("\\.dct", "")
-                    + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
-            }
-            
+                //@todo function whos do record to journal
+                String detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
+                String recordAboutType = fileEnemy.toAbsolutePath().toString()
+                        + "|||||" + detectedType 
+                        + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
+                putRecordInToDocTypeJournal(fileEnemy, detectedType, recordAboutType);
+           }
         }
-        return "UNDEFINED";
+    }
+    private void putRecordInToDocTypeJournal(Path fileEnemy, String typeFile, String recordAboutThat){
+        docTypeCreatorInner.getCheckedSubCurrentDir(typeFile);
+    }
+    protected void setLockForStorages(Path storageDir){
+        //@todo put record about storage processing
     }
     private Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
             ArrayList<String> linesFromBlank){
