@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -50,31 +51,79 @@ public class IdDocTypeFileManager {
                 ex.printStackTrace();
                 System.out.println("[ERROR] Can`t read lines from file " + fileEnemy.toAbsolutePath().toString());
             }
-            detectFileType(lines);
+            detectFileType(lines, fileEnemy);
         }
     }
-    private void detectFileType(ArrayList<String> outerLinesFromSrcFile){
+    private void detectFileType(ArrayList<String> outerLinesFromSrcFile,Path detectedFileName){
         ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
         dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
+        int countDetectedPercents = 0;
+        Double detectFileTypeAndWriteRecordToJournal = Double.MIN_NORMAL;
+        String detectedType = docTypeCreatorInner.getNameForDefaultFileType();
         for(Path fileEnemy : dictonariesBlank){
             ArrayList<String> linesFromBlank = new ArrayList<String>();
             linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
-            Double detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
+            detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
             if(  detectFileTypeAndWriteRecordToJournal > 50 ){
+                countDetectedPercents++;
                 //@todo function whos do record to journal
-                String detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
-                String recordAboutType = fileEnemy.toAbsolutePath().toString()
+                detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
+                String recordAboutType = 
+                        IdDocTypeFileDirCreator.getNewProcessId()
+                        + "|||||" + detectedFileName.toAbsolutePath().toString()
                         + "|||||" + detectedType 
                         + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
-                putRecordInToDocTypeJournal(fileEnemy, detectedType, recordAboutType);
+                putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
            }
+        }
+        if( countDetectedPercents == 0 ){
+            
+            String recordAboutType = IdDocTypeFileDirCreator.getNewProcessId()
+                + "|||||" + detectedFileName.toAbsolutePath().toString()
+                + "|||||" + detectedType
+                + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
+            putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
         }
     }
     private void putRecordInToDocTypeJournal(Path fileEnemy, String typeFile, String recordAboutThat){
-        docTypeCreatorInner.getCheckedSubCurrentDir(typeFile);
+        Path checkedSubCurrentDir = docTypeCreatorInner.getCheckedSubCurrentDir(typeFile);
+        Path storageDir = idFmReportInner.getCurrentStorage();
+        Path currentDir = docTypeCreatorInner.getCurrentDir();
+        Path nameStorageDir = storageDir.getName(storageDir.getNameCount() - 1);
+        String journalFileExtention = docTypeCreatorInner.getJournalFileExtention();
+        
+        Path creationJournalFileName = Paths.get(checkedSubCurrentDir.toString(), nameStorageDir.toString() + journalFileExtention);
+        if( Files.notExists(creationJournalFileName) ){
+            try {
+                Files.createFile(creationJournalFileName);
+            } catch (IOException ex) {
+                ex.getMessage();
+                ex.printStackTrace();
+                System.out.println("[ERROR] Can`t create lock file " + creationJournalFileName.toAbsolutePath().toString());
+            }
+        }
+        
+        ArrayList<String> readJournal = new ArrayList<String>();
+                
+        readJournal.addAll(IdDocTypeFileDirCreator.readJournal(creationJournalFileName.toString()));
+        readJournal.add(recordAboutThat);
+        IdDocTypeFileDirCreator.writeJournal(creationJournalFileName.toString(), readJournal);
     }
     protected void setLockForStorages(Path storageDir){
         //@todo put record about storage processing
+        String definedFileLockExtention = dictonariesFM.getDefinedFileLockExtention();
+        Path currentDir = docTypeCreatorInner.getCurrentDir();
+        Path nameStorageDir = storageDir.getName(storageDir.getNameCount() - 1);
+        Path creationLockFileName = Paths.get(currentDir.toString(), nameStorageDir.toString() + definedFileLockExtention);
+        if( Files.notExists(creationLockFileName) ){
+            try {
+                Files.createFile(creationLockFileName);
+            } catch (IOException ex) {
+                ex.getMessage();
+                ex.printStackTrace();
+                System.out.println("[ERROR] Can`t create lock file " + creationLockFileName.toAbsolutePath().toString());
+            }
+        }
     }
     private Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
             ArrayList<String> linesFromBlank){

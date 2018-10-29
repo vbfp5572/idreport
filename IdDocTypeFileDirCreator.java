@@ -15,6 +15,10 @@
  */
 package ru.vbfp.idreport;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -25,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -62,6 +67,7 @@ public class IdDocTypeFileDirCreator {
     private static final String DIR_DOC_TYPE_UNDEF = "UNDEF";
 
     private static final String DOC_TYPE_LOCK_FILE_NAME_EXT = "status.lck";
+    private static final String DOC_TYPE_JOURNAL_FILE_NAME_EXT = ".jnl";
     
     private Path operationsDir;
     
@@ -71,6 +77,9 @@ public class IdDocTypeFileDirCreator {
     }
     protected Path getCurrentDir(){
         return this.operationsDir;
+    }
+    protected String getNameForDefaultFileType(){
+        return DIR_DOC_TYPE_UNDEF;
     }
     private void createAllSubFodersInCurrent(){
         getCheckedSubCurrentDir(DIR_DOC_TYPE_AOCP);
@@ -153,6 +162,9 @@ public class IdDocTypeFileDirCreator {
         System.out.println("[INFO]DocType.getCheckedSubCurrentDir " + doItForDir.toString());
         return checkDirsExistOrCreate(doItForDir);
     }
+    protected String getJournalFileExtention(){
+        return DOC_TYPE_JOURNAL_FILE_NAME_EXT;
+    }
     protected Path setLockForCurrentDir(){
         String processIdForNow = getNewProcessId();
         Path lockedFilePath = Paths.get(operationsDir.toString(),DOC_TYPE_LOCK_FILE_NAME_EXT);
@@ -230,6 +242,43 @@ public class IdDocTypeFileDirCreator {
         if ( Files.isSymbolicLink(innerWorkPath) ){
             System.out.println("[ERROR] File or Directory exist and it is not a SymbolicLink: " + innerWorkPath.toString());
             throw new IOException("[ERROR] File or Directory exist and it is a SymbolicLink: " + innerWorkPath.toString());
+        }
+    }
+    protected static ArrayList<String> readJournal(String ncStrCfgPath){
+        ArrayList<String> strForReturn;
+        strForReturn = new ArrayList<String>();
+        try(BufferedReader br = new BufferedReader(new FileReader(ncStrCfgPath)))
+        {
+            String s;
+            while((s=br.readLine())!=null){
+                
+                    strForReturn.add(s.trim());
+                    //System.out.println(s);
+            }
+        }
+         catch(IOException ex){
+            ex.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + ncStrCfgPath
+            + " " + ex.getMessage());
+        }   
+        return strForReturn;
+    }
+    protected static void writeJournal(String strCfgPath, ArrayList<String> strTextRemark){
+        
+        
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(strCfgPath)))
+        {
+            for(String itemStr : strTextRemark){
+                String text = itemStr.toString();
+                
+                bw.write(text);
+                bw.newLine();
+            }
+        }
+        catch(IOException ex){
+             ex.printStackTrace();
+            System.out.println("[ERROR] Can`t read count files in work directory " + strCfgPath
+            + " " + ex.getMessage());
         }
     }
 }
