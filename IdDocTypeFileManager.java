@@ -31,6 +31,8 @@ public class IdDocTypeFileManager {
     private IdDocTypeFileDirCreator docTypeCreatorInner;
     private IdFileManager idFmReportInner;
     private IdDictFileManager dictonariesFM;
+    
+    private static final Double DETECT_LIMIT_PERCENT = 50D;
 
     public IdDocTypeFileManager(IdDocTypeFileDirCreator docTypeCreatorOuter, 
             IdFileManager idFmReportOuter) {
@@ -58,13 +60,22 @@ public class IdDocTypeFileManager {
         ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
         dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
         int countDetectedPercents = 0;
-        Double detectFileTypeAndWriteRecordToJournal = Double.MIN_NORMAL;
+        Double detectFileTypeAndWriteRecordToJournal = 0D;
         String detectedType = docTypeCreatorInner.getNameForDefaultFileType();
         for(Path fileEnemy : dictonariesBlank){
+            detectFileTypeAndWriteRecordToJournal = 0D;
             ArrayList<String> linesFromBlank = new ArrayList<String>();
+            
             linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
+            if( linesFromBlank.size() == 0 ){
+                continue;
+            }
             detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
-            if(  detectFileTypeAndWriteRecordToJournal > 50 ){
+            System.out.println("[DETECTPERCENT]" + detectFileTypeAndWriteRecordToJournal.toString() + "[DETECTTYPE] detected file " 
+                    + detectedFileName.toAbsolutePath().toString()
+                    + " chek for type "
+                    + fileEnemy.toAbsolutePath().toString());
+            if(  detectFileTypeAndWriteRecordToJournal >= DETECT_LIMIT_PERCENT ){
                 countDetectedPercents++;
                 //@todo function whos do record to journal
                 detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
@@ -73,15 +84,18 @@ public class IdDocTypeFileManager {
                         + "|||||" + detectedFileName.toAbsolutePath().toString()
                         + "|||||" + detectedType 
                         + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
+                detectFileTypeAndWriteRecordToJournal = 0D;
                 putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
+                
            }
         }
-        if( countDetectedPercents == 0 ){
+        if( detectFileTypeAndWriteRecordToJournal < DETECT_LIMIT_PERCENT ){
             
             String recordAboutType = IdDocTypeFileDirCreator.getNewProcessId()
                 + "|||||" + detectedFileName.toAbsolutePath().toString()
                 + "|||||" + detectedType
                 + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
+            detectFileTypeAndWriteRecordToJournal = 0D;
             putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
         }
     }
@@ -127,17 +141,36 @@ public class IdDocTypeFileManager {
     }
     private Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
             ArrayList<String> linesFromBlank){
+        ArrayList<Integer> countMatchesSrc = new ArrayList<Integer>();
+        ArrayList<Integer> countMatchesBlank = new ArrayList<Integer>();
         Integer countContains = 0;
-        for(String fileEnemy : outerLinesFromSrcFile){
+        double calculatedPercent = 0D;
+        for(String fileSrcEnemy : outerLinesFromSrcFile){
             //@todo compare algoritm here
+            countContains = 0;
             for(String blankEnemy : linesFromBlank){
-                if( fileEnemy.toLowerCase().contains(blankEnemy.toLowerCase()) ){
+                Integer indexMatchesBlank = 0;
+                if( fileSrcEnemy.toLowerCase().matches(blankEnemy.toLowerCase()) ){
+                    indexMatchesBlank++;
                     countContains++;
                 }
+                countMatchesBlank.add(indexMatchesBlank);
             }
+            countMatchesSrc.add(countContains);
         }
-        Integer countRecoedsInBlank = linesFromBlank.size();
-        return ( countContains.doubleValue()  / countRecoedsInBlank.doubleValue() );
+        Integer sumSrcMatches = 0;
+        for(Integer countContainsEnemy : countMatchesSrc){
+            sumSrcMatches = sumSrcMatches + countContainsEnemy;
+        }
+        Integer sizeLinesSrcFile = outerLinesFromSrcFile.size();
+        Integer sumBlankMatches = 0;
+        for(Integer countContainsBlankEnemy : countMatchesBlank){
+            sumBlankMatches = sumBlankMatches + countContainsBlankEnemy;
+        }
+        Integer sizeLinesBlank = linesFromBlank.size();
+        calculatedPercent = (( sumSrcMatches  / sizeLinesSrcFile )
+                + (sumBlankMatches / sizeLinesBlank))* 100D;
+        return calculatedPercent;
     }
     private ArrayList<String> getBlankWordFromFile(Path fileEnemy){
         ArrayList<String> lines = new ArrayList<String>();
