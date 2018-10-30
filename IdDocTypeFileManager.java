@@ -60,44 +60,75 @@ public class IdDocTypeFileManager {
         ArrayList<Path> dictonariesBlank = new ArrayList<Path>();
         dictonariesBlank.addAll(idFmReportInner.getDctFilesFromDictonariesBlankDir());
         int countDetectedPercents = 0;
-        Double detectFileTypeAndWriteRecordToJournal = 0D;
+        Double detectPercent = 0D;
         String detectedType = docTypeCreatorInner.getNameForDefaultFileType();
+        String allTypesResults = IdDocTypeFileDirCreator.getNewProcessId()
+                            + "|||||" + detectedFileName.toAbsolutePath().toString();
+        Boolean fileDetected = Boolean.FALSE;
+        
         for(Path fileEnemy : dictonariesBlank){
-            detectFileTypeAndWriteRecordToJournal = 0D;
             ArrayList<String> linesFromBlank = new ArrayList<String>();
-            
             linesFromBlank.addAll(getBlankWordFromFile(fileEnemy));
-            if( linesFromBlank.size() == 0 ){
-                continue;
-            }
-            detectFileTypeAndWriteRecordToJournal = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
-            System.out.println("[DETECTPERCENT]" + detectFileTypeAndWriteRecordToJournal.toString() + "[DETECTTYPE] detected file " 
+            detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
+            detectPercent = 0D;
+            detectPercent = detectFileTypeAndWriteRecordToJournal(outerLinesFromSrcFile, linesFromBlank);
+            /*System.out.println("[DETECTPERCENT]" + detectFileTypeAndWriteRecordToJournal.toString() + "[DETECTTYPE] detected file " 
                     + detectedFileName.toAbsolutePath().toString()
                     + " chek for type "
-                    + fileEnemy.toAbsolutePath().toString());
-            if(  detectFileTypeAndWriteRecordToJournal >= DETECT_LIMIT_PERCENT ){
-                countDetectedPercents++;
-                //@todo function whos do record to journal
-                detectedType = fileEnemy.getFileName().toString().replaceAll("\\.dct", "");
-                String recordAboutType = 
-                        IdDocTypeFileDirCreator.getNewProcessId()
-                        + "|||||" + detectedFileName.toAbsolutePath().toString()
-                        + "|||||" + detectedType 
-                        + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
-                detectFileTypeAndWriteRecordToJournal = 0D;
-                putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
-                
+                    + detectedType
+                    + " above DETECT_LIMIT_PERCENT "
+                    + (detectFileTypeAndWriteRecordToJournal >= DETECT_LIMIT_PERCENT) );*/
+            allTypesResults = allTypesResults + "|||||" + detectedType + "|||||" + detectPercent.toString();
+            if( linesFromBlank.size() > 0 ){
+                if(  detectPercent >= DETECT_LIMIT_PERCENT ){
+                    fileDetected = Boolean.TRUE;
+                    countDetectedPercents++;
+                    //@todo function whos do record to journal
+                    
+                    String recordAboutType = 
+                            IdDocTypeFileDirCreator.getNewProcessId()
+                            + "|||||" + detectedFileName.toAbsolutePath().toString()
+                            + "|||||" + detectedType 
+                            + "|||||" + detectPercent.toString();
+                    
+                    putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
+                    detectPercent = 0D;
+               }
            }
         }
-        if( detectFileTypeAndWriteRecordToJournal < DETECT_LIMIT_PERCENT ){
-            
+        putRecordInToAllTypesJournal(allTypesResults);
+        if( !fileDetected ){
+            detectedType = docTypeCreatorInner.getNameForDefaultFileType();
             String recordAboutType = IdDocTypeFileDirCreator.getNewProcessId()
                 + "|||||" + detectedFileName.toAbsolutePath().toString()
                 + "|||||" + detectedType
-                + "|||||" + detectFileTypeAndWriteRecordToJournal.toString();
-            detectFileTypeAndWriteRecordToJournal = 0D;
+                + "|||||" + detectPercent.toString();
             putRecordInToDocTypeJournal(detectedFileName, detectedType, recordAboutType);
+            detectPercent = 0D;
         }
+    }
+    private void putRecordInToAllTypesJournal(String recordForAllDocTypes){
+        Path storageDir = idFmReportInner.getCurrentStorage();
+        Path currentDir = docTypeCreatorInner.getCurrentDir();
+        Path nameStorageDir = storageDir.getName(storageDir.getNameCount() - 1);
+        String journalFileExtention = docTypeCreatorInner.getJournalFileExtention();
+        
+        Path creationJournalFileName = Paths.get(currentDir.toString(), nameStorageDir.toString() + journalFileExtention);
+        if( Files.notExists(creationJournalFileName) ){
+            try {
+                Files.createFile(creationJournalFileName);
+            } catch (IOException ex) {
+                ex.getMessage();
+                ex.printStackTrace();
+                System.out.println("[ERROR] Can`t create lock file " + creationJournalFileName.toAbsolutePath().toString());
+            }
+        }
+        
+        ArrayList<String> readJournal = new ArrayList<String>();
+                
+        readJournal.addAll(IdDocTypeFileDirCreator.readJournal(creationJournalFileName.toString()));
+        readJournal.add(recordForAllDocTypes);
+        IdDocTypeFileDirCreator.writeJournal(creationJournalFileName.toString(), readJournal);
     }
     private void putRecordInToDocTypeJournal(Path fileEnemy, String typeFile, String recordAboutThat){
         Path checkedSubCurrentDir = docTypeCreatorInner.getCheckedSubCurrentDir(typeFile);
@@ -139,12 +170,12 @@ public class IdDocTypeFileManager {
             }
         }
     }
-    private Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
+    private static Double detectFileTypeAndWriteRecordToJournal(ArrayList<String> outerLinesFromSrcFile,
             ArrayList<String> linesFromBlank){
         ArrayList<Integer> countMatchesSrc = new ArrayList<Integer>();
         ArrayList<Integer> countMatchesBlank = new ArrayList<Integer>();
         Integer countContains = 0;
-        double calculatedPercent = 0D;
+        
         for(String fileSrcEnemy : outerLinesFromSrcFile){
             //@todo compare algoritm here
             countContains = 0;
@@ -168,8 +199,9 @@ public class IdDocTypeFileManager {
             sumBlankMatches = sumBlankMatches + countContainsBlankEnemy;
         }
         Integer sizeLinesBlank = linesFromBlank.size();
-        calculatedPercent = (( sumSrcMatches  / sizeLinesSrcFile )
-                + (sumBlankMatches / sizeLinesBlank))* 100D;
+        double calculatedPercent = 0D;
+        calculatedPercent = (( (double) sumSrcMatches  / (double) sizeLinesSrcFile )
+                + ( (double) sumBlankMatches.doubleValue() / (double) sizeLinesBlank.doubleValue() ))* 100D;
         return calculatedPercent;
     }
     private ArrayList<String> getBlankWordFromFile(Path fileEnemy){

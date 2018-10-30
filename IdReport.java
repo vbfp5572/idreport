@@ -30,8 +30,8 @@ public class IdReport {
      */
     public static void main(String[] args) {
         runTextFileSorter();
-        //runDictonariesBuilder();
-        //runProcessForCreateXlsReestr();
+        runDictonariesBuilder();
+        runProcessForCreateXlsReestr();
         //runProcessForCreateXlsReestrOnlyTwoStorages();
         
     }
@@ -43,8 +43,8 @@ public class IdReport {
         Integer sizeStoragesList = idFmReport.getSizeStoragesList();
         
         
-        for (int i = 0; i < 2; i++) {
-        //for (int i = 0; i < sizeStoragesList; i++) {
+        //for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < sizeStoragesList; i++) {
             Path currentStorge = idFmReport.getCurrentStorage();
             System.out.println("Current storage:");
             System.out.println(idFmReport.getCurrentStorage().toString());
